@@ -319,4 +319,571 @@
     <div class="scan-frame" id="frameFront">
       <input type="file" accept="image/*" id="fileFront">
       <div class="drop-msg" id="dropFront"><div class="ring">◎</div>Tap to upload a front photo</div>
-      <img class="photo" id="photoFront" a
+      <img class="photo" id="photoFront" alt="">
+      <div class="vignette"></div>
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div class="scan-grid" id="gridFront"></div>
+      <div class="scan-ring" id="ringFront"></div>
+      <div class="sweep" id="sweepFront"></div>
+      <canvas class="overlay" id="overlayFront"></canvas>
+      <div class="scan-caption" id="captionFront">Initializing…</div>
+    </div>
+    <button class="btn" id="scanFrontBtn" disabled>Choose a photo</button>
+    <div class="status" id="statusFront">Loading measurement model…</div>
+  </div>
+
+  <div class="panel" id="panelResults">
+    <div class="panel-title">Front measurements</div>
+    <div id="frontResults">
+      <div class="metric"><span class="label">Face shape</span><span class="value" id="mShape">–</span></div>
+      <div class="metric"><span class="label">Length / width ratio</span><span class="value" id="mRatio">–</span></div>
+      <div class="metric"><span class="label">Jaw corner angle</span><span class="value" id="mJaw">–</span></div>
+      <div class="metric"><span class="label">Facial thirds balance</span><span class="value" id="mThirds">–</span></div>
+      <div class="metric"><span class="label">Left/right symmetry gap</span><span class="value" id="mSym">–</span></div>
+    </div>
+    <div class="note">Approximate values, sensitive to angle, lighting, and head tilt — this is geometry, not a clinical or attractiveness measure.</div>
+
+    <div class="hair-header"><span class="tag" id="hairTag">MATCHED TO YOUR SHAPE</span></div>
+    <div id="hairList"></div>
+
+    <button class="btn ghost" id="restartBtn">Start over</button>
+  </div>
+
+  <footer>face-api.js (68-point landmark model, MIT license) runs entirely in your browser.<br>Not a diagnosis, medical assessment, or attractiveness rating.</footer>
+</div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+/* ============================================================
+   FACE SCAN — client-side only.
+   All detection/measurement happens in the browser via face-api.js.
+   No photo ever leaves the device.
+   ============================================================ */
+
+const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+const els = {
+  welcome: document.getElementById('welcome'),
+  googleBtn: document.getElementById('googleBtn'),
+  guestBtn: document.getElementById('guestBtn'),
+  emailBtn: document.getElementById('emailBtn'),
+  emailModal: document.getElementById('emailModal'),
+  emailModalTitle: document.getElementById('emailModalTitle'),
+  emailModalSub: document.getElementById('emailModalSub'),
+  nameFieldWrap: document.getElementById('nameFieldWrap'),
+  confirmFieldWrap: document.getElementById('confirmFieldWrap'),
+  emailNameInput: document.getElementById('emailNameInput'),
+  emailEmailInput: document.getElementById('emailEmailInput'),
+  emailPasswordInput: document.getElementById('emailPasswordInput'),
+  emailPasswordConfirmInput: document.getElementById('emailPasswordConfirmInput'),
+  emailModalError: document.getElementById('emailModalError'),
+  emailModalCancel: document.getElementById('emailModalCancel'),
+  emailModalSubmit: document.getElementById('emailModalSubmit'),
+  emailModalToggle: document.getElementById('emailModalToggle'),
+  emailModalToggleLink: document.getElementById('emailModalToggleLink'),
+  googleModal: document.getElementById('googleModal'),
+  googleNameInput: document.getElementById('googleNameInput'),
+  googleEmailInput: document.getElementById('googleEmailInput'),
+  googleModalCancel: document.getElementById('googleModalCancel'),
+  googleModalContinue: document.getElementById('googleModalContinue'),
+  authBadge: document.getElementById('authBadge'),
+  authAvatar: document.getElementById('authAvatar'),
+  authWho: document.getElementById('authWho'),
+  authSwitch: document.getElementById('authSwitch'),
+  stepPill1: document.getElementById('stepPill1'),
+  stepPill3: document.getElementById('stepPill3'),
+  panelFront: document.getElementById('panelFront'),
+  panelResults: document.getElementById('panelResults'),
+  fileFront: document.getElementById('fileFront'),
+  dropFront: document.getElementById('dropFront'),
+  photoFront: document.getElementById('photoFront'),
+  gridFront: document.getElementById('gridFront'),
+  ringFront: document.getElementById('ringFront'),
+  sweepFront: document.getElementById('sweepFront'),
+  overlayFront: document.getElementById('overlayFront'),
+  captionFront: document.getElementById('captionFront'),
+  scanFrontBtn: document.getElementById('scanFrontBtn'),
+  statusFront: document.getElementById('statusFront'),
+  mShape: document.getElementById('mShape'),
+  mRatio: document.getElementById('mRatio'),
+  mJaw: document.getElementById('mJaw'),
+  mThirds: document.getElementById('mThirds'),
+  mSym: document.getElementById('mSym'),
+  hairTag: document.getElementById('hairTag'),
+  hairList: document.getElementById('hairList'),
+  restartBtn: document.getElementById('restartBtn'),
+};
+
+let modelsReady = false;
+let selectedFile = null;
+let currentUser = null; // { name, email, provider, picture }
+
+/* ---------- Auth: Google + Guest ----------
+   NOTE: This is a self-contained static HTML file with no backend, so a real
+   Google OAuth flow (Google Identity Services) needs a Google Cloud OAuth
+   Client ID registered to this page's origin. Drop yours in below and this
+   will automatically use the real Google popup; until then it falls back to
+   a local "demo" sign-in so the two options are still functionally distinct
+   in the UI (guest vs a named session), with nothing ever sent anywhere.
+------------------------------------------------------------------------- */
+const GOOGLE_CLIENT_ID = '457160020142-gugcc5bo5us43onv635l07npkr00pdih.apps.googleusercontent.com';
+
+function tryRealGoogleSignIn(){
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
+  if (GOOGLE_CLIENT_ID.startsWith('YOUR_GOOGLE_CLIENT_ID')) return false;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: (response) => {
+      try{
+        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        completeSignIn({ name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' });
+      }catch(e){
+        console.error(e);
+        openGoogleModal();
+      }
+    },
+  });
+  google.accounts.id.prompt((notification) => {
+    // If the real Google prompt can't be shown for any reason (browser
+    // blocked it, no session, popup closed, etc.), fall back to the demo
+    // modal instead of leaving the button looking unresponsive.
+    const blocked = (notification.isNotDisplayed && notification.isNotDisplayed())
+      || (notification.isSkippedMoment && notification.isSkippedMoment());
+    if (blocked) openGoogleModal();
+  });
+  return true;
+}
+
+function openGoogleModal(){
+  els.googleModal.classList.add('active');
+  els.googleNameInput.focus();
+}
+function closeGoogleModal(){
+  els.googleModal.classList.remove('active');
+}
+
+els.googleBtn.addEventListener('click', () => {
+  const usedRealFlow = tryRealGoogleSignIn();
+  if (!usedRealFlow) openGoogleModal();
+});
+els.googleModalCancel.addEventListener('click', closeGoogleModal);
+els.googleModalContinue.addEventListener('click', () => {
+  const name = els.googleNameInput.value.trim() || 'Google user';
+  const email = els.googleEmailInput.value.trim();
+  closeGoogleModal();
+  completeSignIn({ name, email, provider: 'google-demo' });
+});
+
+els.guestBtn.addEventListener('click', () => {
+  completeSignIn({ name: 'Guest', provider: 'guest' });
+});
+
+function completeSignIn(user){
+  currentUser = user;
+  saveUserToStorage(user);
+  renderAuthBadge();
+  els.welcome.classList.add('hidden');
+}
+
+/* ---------- Persistence: keep a Google sign-in across page reloads ----------
+   Guest sessions are intentionally NOT persisted — "Continue as Guest" starts
+   fresh every time. A Google (real or demo) session is remembered in this
+   browser via localStorage until the person taps "switch".
+------------------------------------------------------------------------- */
+const AUTH_STORAGE_KEY = 'faceScanAuthUser';
+
+function saveUserToStorage(user){
+  try{
+    if (user.provider === 'google' || user.provider === 'google-demo'){
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    }
+  }catch(e){ console.warn('Could not persist sign-in', e); }
+}
+
+function loadUserFromStorage(){
+  try{
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function clearStoredUser(){
+  try{ localStorage.removeItem(AUTH_STORAGE_KEY); }catch(e){}
+}
+
+// Auto-resume a remembered Google sign-in on page load, skipping the welcome screen.
+(function resumeSession(){
+  const saved = loadUserFromStorage();
+  if (saved){
+    currentUser = saved;
+    renderAuthBadge();
+    els.welcome.classList.add('hidden');
+  }
+})();
+
+function renderAuthBadge(){
+  if (!currentUser){
+    els.authBadge.style.display = 'none';
+    return;
+  }
+  els.authWho.textContent = currentUser.provider === 'guest' ? 'Guest' : currentUser.name;
+  if (currentUser.picture){
+    els.authAvatar.classList.remove('fallback');
+    els.authAvatar.outerHTML = `<img class="avatar" id="authAvatar" src="${currentUser.picture}" alt="">`;
+    els.authAvatar = document.getElementById('authAvatar');
+  } else {
+    const initial = (currentUser.provider === 'guest' ? 'G' : (currentUser.name || 'U')).trim().charAt(0).toUpperCase();
+    els.authAvatar.textContent = initial;
+  }
+  els.authBadge.style.display = 'flex';
+}
+
+els.authSwitch.addEventListener('click', () => {
+  currentUser = null;
+  clearStoredUser();
+  renderAuthBadge();
+  els.welcome.classList.remove('hidden');
+});
+
+/* ---------- Load models ---------- */
+async function loadModels(){
+  try{
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    ]);
+    modelsReady = true;
+    els.statusFront.textContent = '';
+    if (selectedFile) els.scanFrontBtn.disabled = false;
+  }catch(err){
+    console.error(err);
+    els.statusFront.textContent = 'Could not load the measurement model — check your connection and reload.';
+  }
+}
+loadModels();
+
+/* ---------- Photo selection ---------- */
+els.fileFront.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  selectedFile = file;
+  const url = URL.createObjectURL(file);
+  els.photoFront.src = url;
+  els.photoFront.style.display = 'block';
+  els.dropFront.style.display = 'none';
+  els.scanFrontBtn.textContent = 'Run scan';
+  els.scanFrontBtn.disabled = !modelsReady;
+  els.statusFront.textContent = modelsReady ? '' : 'Loading measurement model…';
+  // reset any previous overlay
+  const ctx = els.overlayFront.getContext('2d');
+  ctx.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
+  els.overlayFront.style.display = 'none';
+});
+
+/* ---------- Run scan ---------- */
+els.scanFrontBtn.addEventListener('click', runScan);
+
+async function runScan(){
+  if (!selectedFile || !modelsReady) return;
+  els.scanFrontBtn.disabled = true;
+  els.fileFront.style.pointerEvents = 'none';
+  els.gridFront.style.display = 'block';
+  els.ringFront.style.display = 'block';
+  els.sweepFront.style.display = 'block';
+  els.captionFront.style.display = 'block';
+  els.captionFront.textContent = 'Detecting landmarks…';
+  els.statusFront.textContent = '';
+
+  try{
+    // give the browser a frame to paint the scanning animation before the (blocking-ish) inference
+    await new Promise(r => setTimeout(r, 60));
+
+    const detection = await faceapi
+      .detectSingleFace(els.photoFront, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
+      .withFaceLandmarks();
+
+    if (!detection){
+      throw new Error('NO_FACE');
+    }
+
+    els.captionFront.textContent = 'Face found — measuring…';
+    await new Promise(r => setTimeout(r, 500));
+
+    drawLandmarks(detection);
+    const metrics = computeMetrics(detection.landmarks, detection.detection.box);
+
+    els.captionFront.textContent = 'Scan complete.';
+    await new Promise(r => setTimeout(r, 350));
+
+    showResults(metrics);
+
+  }catch(err){
+    console.error(err);
+    els.gridFront.style.display = 'none';
+    els.ringFront.style.display = 'none';
+    els.sweepFront.style.display = 'none';
+    els.captionFront.style.display = 'none';
+    els.fileFront.style.pointerEvents = 'auto';
+    els.scanFrontBtn.disabled = false;
+    if (err && err.message === 'NO_FACE'){
+      els.statusFront.textContent = 'No face detected — try a clearer, front-facing, well-lit photo.';
+    } else {
+      els.statusFront.textContent = 'Something went wrong during the scan. Please try again.';
+    }
+  }
+}
+
+/* ---------- Draw landmark overlay ---------- */
+function drawLandmarks(detection){
+  const img = els.photoFront;
+  const canvas = els.overlayFront;
+  const rect = img.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+
+  const displaySize = { width: rect.width, height: rect.height };
+  faceapi.matchDimensions(canvas, displaySize);
+  const resized = faceapi.resizeResults(detection, displaySize);
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#5EEAD4';
+  ctx.strokeStyle = 'rgba(94,234,212,0.5)';
+  resized.landmarks.positions.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  canvas.style.display = 'block';
+}
+
+/* ---------- Geometry helpers ---------- */
+function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function midpoint(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+function angleAt(vertex, p1, p2){
+  const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+  const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const mag = Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y);
+  if (mag === 0) return 0;
+  const cos = Math.min(1, Math.max(-1, dot / mag));
+  return Math.acos(cos) * (180 / Math.PI);
+}
+
+/* ---------- Compute metrics from 68-point landmarks ----------
+   Landmark index reference (face-api.js / dlib 68-point model):
+   0-16   jawline (0 = right ear side, 16 = left ear side, 8 = chin)
+   17-21  right eyebrow, 22-26 left eyebrow
+   27-35  nose bridge/base (27 = nasion, 33 = nose base/tip)
+   36-41  right eye, 42-47 left eye
+   48-67  mouth
+   There is no hairline point in this model, so overall face length
+   is estimated from the brow line to the chin, scaled by a fixed
+   factor to approximate the forehead — a common approximation used
+   in landmark-only face-shape tools.
+--------------------------------------------------------------- */
+function computeMetrics(landmarks, box){
+  const p = landmarks.positions;
+
+  const jaw = p.slice(0, 17);
+  const chin = jaw[8];
+
+  const browCenter = midpoint(p[21], p[22]);
+  const noseBase = p[33];
+  const nasion = p[27];
+  const leftEyeCenter = midpoint(p[36], p[39]);
+  const rightEyeCenter = midpoint(p[42], p[45]);
+
+  // --- Head tilt (roll) from the eye line — large tilt lowers measurement quality ---
+  const eyeDx = rightEyeCenter.x - leftEyeCenter.x;
+  const eyeDy = rightEyeCenter.y - leftEyeCenter.y;
+  const tiltDeg = Math.abs(Math.atan2(eyeDy, eyeDx) * (180 / Math.PI));
+
+  // --- Width & length ---
+  const cheekboneWidth = dist(jaw[1], jaw[15]);   // widest reliable jaw-arc points
+  const jawWidth = dist(jaw[4], jaw[12]);          // narrower, lower jaw corners
+  const foreheadWidthProxy = dist(p[17], p[26]);   // outer eyebrow points, proxy only
+
+  // Face length: prefer the actual detector bounding box top (real detected
+  // extent, usually reaching close to the hairline) over a fixed multiplier —
+  // falls back to the brow-to-chin estimate if the box looks unreasonable.
+  const browToChin = dist(browCenter, chin);
+  const boxTopLength = box ? (chin.y - box.top) : 0;
+  const estimatedFaceLength = (boxTopLength > browToChin * 1.05 && boxTopLength < browToChin * 1.8)
+    ? boxTopLength
+    : browToChin * 1.35;
+
+  const lengthWidthRatio = estimatedFaceLength / cheekboneWidth;
+
+  // --- Jaw corner angle (averaged both sides) ---
+  const rightJawAngle = angleAt(jaw[4], jaw[1], chin);
+  const leftJawAngle = angleAt(jaw[12], jaw[15], chin);
+  const jawAngleDeg = (rightJawAngle + leftJawAngle) / 2;
+
+  // --- Facial thirds (brow→nose-base vs nose-base→chin) ---
+  const upperThird = dist(browCenter, noseBase);
+  const lowerThird = dist(noseBase, chin);
+  const thirdsRatio = upperThird / lowerThird; // ~1.0 = balanced
+
+  // --- Symmetry: compare left/right offsets from the vertical midline,
+  //     using the eye line midpoint (more stable than nose-only) as center ---
+  const midlineX = midpoint(leftEyeCenter, rightEyeCenter).x;
+  const pairs = [[jaw[2], jaw[14]], [jaw[4], jaw[12]], [jaw[6], jaw[10]]];
+  let symDiffSum = 0;
+  pairs.forEach(([r, l]) => {
+    const rDist = Math.abs(r.x - midlineX);
+    const lDist = Math.abs(l.x - midlineX);
+    symDiffSum += Math.abs(rDist - lDist);
+  });
+  const avgSymDiff = symDiffSum / pairs.length;
+  const symmetryGapPct = (avgSymDiff / cheekboneWidth) * 100;
+
+  // --- Shape classification (heuristic, geometry only) ---
+  const jawToFace = jawWidth / cheekboneWidth;
+  const foreheadToFace = foreheadWidthProxy / cheekboneWidth;
+  const shape = classifyShape(lengthWidthRatio, jawToFace, foreheadToFace, jawAngleDeg);
+
+  return {
+    shape,
+    ratio: lengthWidthRatio,
+    jawAngleDeg,
+    thirdsRatio,
+    symmetryGapPct,
+    tiltDeg,
+  };
+}
+
+function classifyShape(ratio, jawToFace, foreheadToFace, jawAngleDeg){
+  // Ordered from most distinctive signal to least, with a small buffer
+  // zone between neighboring categories to avoid flipping on noise.
+  if (ratio > 1.52) return 'Oblong';
+  if (foreheadToFace - jawToFace > 0.09) return 'Heart';
+  if (jawToFace - foreheadToFace > 0.09 && ratio < 1.2) return 'Triangle';
+  if (jawToFace < 0.80 && foreheadToFace < 0.86) return 'Diamond';
+  if (jawToFace > 0.90 && ratio < 1.22){
+    return jawAngleDeg <= 148 ? 'Square' : 'Round';
+  }
+  return 'Oval';
+}
+
+/* ---------- Hairstyle suggestions by shape ---------- */
+const HAIR_GUIDE = {
+  Oval: [
+    { h: 'Textured crop', p: 'Balanced proportions mean most lengths work — a textured crop keeps it low-maintenance while showing off the jaw.' },
+    { h: 'Side-swept fringe', p: 'Softens the forehead without covering the natural symmetry oval faces already have.' },
+    { h: 'Medium slick back', p: 'Keeps the length of the face visible while adding volume at the crown.' },
+  ],
+  Round: [
+    { h: 'Angular fringe', p: 'Sharp, off-center fringe lines add definition and break up the roundness at the cheeks.' },
+    { h: 'High-volume quiff', p: 'Height on top visually elongates the face, balancing the wider cheek and jaw width.' },
+    { h: 'Faded sides, longer top', p: 'Tight sides and length on top draw the eye upward and away from width.' },
+  ],
+  Square: [
+    { h: 'Textured crop with fringe', p: 'Softens the strong jaw corner angle while keeping the cut sharp on top.' },
+    { h: 'Side part with taper', p: 'A defined part breaks the symmetry of a square jaw in a flattering way.' },
+    { h: 'Longer curls or waves', p: 'Movement and texture soften the angular jawline you measured.' },
+  ],
+  Heart: [
+    { h: 'Textured fringe', p: 'Balances a wider forehead against a narrower jaw by adding volume lower on the face.' },
+    { h: 'Side-swept undercut', p: 'Draws attention away from the forehead width and toward the jawline.' },
+    { h: 'Medium length with movement', p: 'Chin-adjacent length adds visual width at the jaw to match the brow width.' },
+  ],
+  Triangle: [
+    { h: 'Volume on top, tapered sides', p: 'Layers around the temples soften the transition from a narrower forehead to a fuller jaw.' },
+  ],
+  Diamond: [
+    { h: 'Fringe with volume at the crown', p: 'Adds width at the forehead and jaw to balance pronounced cheek width.' },
+    { h: 'Textured medium crop', p: 'Softens sharp cheek angles without adding bulk at the sides.' },
+    { h: 'Side part with light taper', p: 'Keeps the sides close so the cheek width you measured doesn\u2019t look wider than it is.' },
+  ],
+  Oblong: [
+    { h: 'Fringe, blunt or textured', p: 'Cuts visual length by breaking up the forehead-to-chin distance you measured.' },
+    { h: 'Flat top with tapered sides', p: 'Adds width at the sides rather than height, balancing the longer ratio.' },
+    { h: 'Medium length, no added height', p: 'Avoids extra volume on top so the face doesn\u2019t read even longer.' },
+  ],
+};
+
+/* ---------- Show results ---------- */
+function showResults(metrics){
+  // metrics
+  els.mShape.textContent = metrics.shape;
+  els.mRatio.textContent = metrics.ratio.toFixed(2) + ' : 1';
+  els.mJaw.textContent = Math.round(metrics.jawAngleDeg) + '°';
+
+  const thirdsPct = Math.round(metrics.thirdsRatio * 100);
+  els.mThirds.textContent = thirdsPct + '%';
+
+  els.mSym.textContent = metrics.symmetryGapPct.toFixed(1) + '%';
+
+  // tilt quality warning
+  let warnBox = document.getElementById('tiltWarn');
+  if (metrics.tiltDeg > 8){
+    if (!warnBox){
+      warnBox = document.createElement('div');
+      warnBox.id = 'tiltWarn';
+      warnBox.className = 'warn-box';
+      els.frontResults.insertAdjacentElement('afterend', warnBox);
+    }
+    warnBox.textContent = `Head was tilted about ${Math.round(metrics.tiltDeg)}° in this photo — that lowers measurement accuracy. For a more reliable read, rescan with your eyes level.`;
+    warnBox.style.display = 'block';
+  } else if (warnBox){
+    warnBox.style.display = 'none';
+  }
+
+  // hair list
+  const guide = HAIR_GUIDE[metrics.shape] || HAIR_GUIDE.Oval;
+  els.hairList.innerHTML = '';
+  guide.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'hair-card';
+    card.style.animationDelay = (0.05 + i * 0.1) + 's';
+    card.innerHTML = `<h4>${item.h}</h4><p>${item.p}</p>`;
+    els.hairList.appendChild(card);
+  });
+  els.hairTag.textContent = 'MATCHED TO ' + metrics.shape.toUpperCase() + ' SHAPE';
+
+  // switch panels
+  els.panelFront.classList.remove('active');
+  els.panelResults.classList.add('active');
+  els.stepPill1.classList.remove('active');
+  els.stepPill1.classList.add('done');
+  els.stepPill3.classList.add('active');
+
+  // reset front scan chrome so it's ready if the user goes back
+  els.gridFront.style.display = 'none';
+  els.ringFront.style.display = 'none';
+  els.sweepFront.style.display = 'none';
+  els.captionFront.style.display = 'none';
+  els.fileFront.style.pointerEvents = 'auto';
+  els.scanFrontBtn.disabled = false;
+}
+
+/* ---------- Restart ---------- */
+els.restartBtn.addEventListener('click', () => {
+  // reset state
+  selectedFile = null;
+  els.fileFront.value = '';
+  els.photoFront.src = '';
+  els.photoFront.style.display = 'none';
+  els.dropFront.style.display = 'flex';
+  els.scanFrontBtn.textContent = 'Choose a photo';
+  els.scanFrontBtn.disabled = true;
+  els.statusFront.textContent = '';
+
+  const ctx = els.overlayFront.getContext('2d');
+  ctx.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
+  els.overlayFront.style.display = 'none';
+
+  // reset panels/stepper
+  const warnBox = document.getElementById('tiltWarn');
+  if (warnBox) warnBox.style.display = 'none';
+  els.panelResults.classList.remove('active');
+  els.panelFront.classList.add('active');
+  els.stepPill3.classList.remove('active');
+  els.stepPill1.classList.remove('done');
+  els.stepPill1.classList.add('active');
+});
+</script>
+</body>
+</html>
