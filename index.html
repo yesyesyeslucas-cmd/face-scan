@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#060B12">
 <meta name="color-scheme" content="dark">
 <title>Face Scan — Structural Analysis</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -133,6 +135,16 @@
   .auth-modal-toggle .link{ color:var(--signal); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
   .field-signup-only{ display:block; }
 
+  .legal-card{ max-width:420px; max-height:80vh; display:flex; flex-direction:column; padding:22px 22px 16px; }
+  .legal-scroll{ overflow-y:auto; flex:1; margin-bottom:14px; }
+  .legal-scroll h3{ font-size:18px; margin-bottom:4px; }
+  .legal-updated{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--ink-dim); margin-bottom:16px; }
+  .legal-scroll h4{ font-size:13px; color:var(--signal); margin-top:16px; margin-bottom:6px; }
+  .legal-scroll p, .legal-scroll li{ font-size:12.5px; color:#CDD8D6; line-height:1.55; margin-bottom:8px; }
+  .legal-scroll ul{ padding-left:18px; }
+  footer .footer-link{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  footer .footer-link:active{ color:var(--signal); }
+
   .welcome-steps{ display:flex; gap:22px; margin-top:34px; opacity:0; animation: fadeUp .7s ease .7s forwards; }
   .welcome-steps div{ font-family:'Space Mono', monospace; font-size:10px; color:var(--ink-dim); text-align:center; }
   .welcome-steps div b{ display:block; color:var(--signal); font-size:16px; margin-bottom:4px; }
@@ -249,52 +261,44 @@
   <h1>Face Scan</h1>
   <p>A real landmark-based scan of your front-facing photo — face shape, jaw angle, symmetry, facial thirds — matched to hairstyles that fit what's actually measured.</p>
   <div class="auth-actions">
-    <button class="auth-btn google" id="googleBtn">
-      <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.1l-6.5-5.4c-2 1.4-4.6 2.2-7.5 2.2-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.6 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.5 5.4C41.6 36 44 30.6 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
-      Sign in with Google
-    </button>
+    <div id="googleBtnReal" style="display:flex; justify-content:center; min-height:44px;"></div>
+    <div id="googleBtnError" style="display:none; text-align:center; font-family:'Space Mono',monospace; font-size:11px; color:var(--accent); margin-top:4px;">
+      Couldn't load Google Sign-In — check your connection and <span id="googleBtnRetry" style="text-decoration:underline; cursor:pointer;">tap to retry</span>.
+    </div>
     <button class="auth-btn guest" id="guestBtn">Continue as Guest</button>
-    <div class="auth-divider"><span>or</span></div>
-    <button class="auth-btn email" id="emailBtn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
-      Continue with Email
-    </button>
   </div>
   <div class="welcome-steps">
     <div><b>01</b>Front photo</div>
     <div><b>02</b>Results</div>
   </div>
 </div>
-
-<div class="auth-modal" id="googleModal">
-  <div class="auth-modal-card">
-    <h3>Sign in with Google</h3>
-    <p>Demo sign-in — no real Google account is contacted and nothing is sent anywhere. This just personalizes the session locally in your browser.</p>
-    <input type="text" id="googleNameInput" placeholder="Your name">
-    <input type="email" id="googleEmailInput" placeholder="you@gmail.com">
-    <div class="auth-modal-actions">
-      <button class="btn ghost" id="googleModalCancel">Cancel</button>
-      <button class="btn" id="googleModalContinue">Continue</button>
-    </div>
-  </div>
-</div>
-
-<div class="auth-modal" id="emailModal">
-  <div class="auth-modal-card">
-    <h3 id="emailModalTitle">Create account</h3>
-    <p id="emailModalSub">Stored only in this browser's local storage — this is a demo login, not a real account system. Don't reuse a password you use elsewhere.</p>
-    <div class="field-signup-only" id="nameFieldWrap"><input type="text" id="emailNameInput" placeholder="Your name"></div>
-    <input type="email" id="emailEmailInput" placeholder="you@example.com">
-    <input type="password" id="emailPasswordInput" placeholder="Password (min 6 characters)">
-    <div class="field-signup-only" id="confirmFieldWrap"><input type="password" id="emailPasswordConfirmInput" placeholder="Confirm password"></div>
-    <div class="auth-modal-error" id="emailModalError" style="display:none;"></div>
-    <div class="auth-modal-actions">
-      <button class="btn ghost" id="emailModalCancel">Cancel</button>
-      <button class="btn" id="emailModalSubmit">Create account</button>
-    </div>
-    <p class="auth-modal-toggle" id="emailModalToggle">Already have an account? <span class="link" id="emailModalToggleLink">Log in</span></p>
-  </div>
-</div>
+<script>
+  // Google's own "One Tap" prompt() has a built-in cooldown — after it's
+  // dismissed a couple of times, Google silently stops showing it on that
+  // origin for a while. Rendering Google's real button instead avoids that
+  // entirely: every tap opens the actual account chooser directly, and
+  // there is no local fallback/demo — sign-in is real or it doesn't happen.
+  window.__renderGoogleBtn = function(){
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
+    google.accounts.id.initialize({
+      client_id: '457160020142-gugcc5bo5us43onv635l07npkr00pdih.apps.googleusercontent.com',
+      callback: (response) => {
+        try{
+          const payload = JSON.parse(atob(response.credential.split('.')[1]));
+          window.__completeGoogleSignIn({ name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' });
+        }catch(e){
+          console.error(e);
+        }
+      },
+    });
+    const target = document.getElementById('googleBtnReal');
+    target.innerHTML = '';
+    google.accounts.id.renderButton(target, {
+      theme: 'filled_white', size: 'large', shape: 'pill', width: 320, text: 'signin_with',
+    });
+    return true;
+  };
+</script>
 
 <div class="wrap">
   <header>
@@ -349,7 +353,26 @@
     <button class="btn ghost" id="restartBtn">Start over</button>
   </div>
 
-  <footer>face-api.js (68-point landmark model, MIT license) runs entirely in your browser.<br>Not a diagnosis, medical assessment, or attractiveness rating.</footer>
+  <footer>
+    face-api.js (68-point landmark model, MIT license) runs entirely in your browser.<br>
+    Not a diagnosis, medical assessment, or attractiveness rating.<br><br>
+    <span class="footer-link" id="termsLink">Terms of Use</span>
+    &nbsp;·&nbsp;
+    <span class="footer-link" id="privacyLink">Privacy Policy</span>
+  </footer>
+</div>
+
+<div class="auth-modal" id="legalModal">
+  <div class="auth-modal-card legal-card">
+    <div class="legal-scroll">
+      <h3 id="legalTitle">Terms of Use</h3>
+      <div class="legal-updated">Last updated: August 2026</div>
+      <div id="legalBody"></div>
+    </div>
+    <div class="auth-modal-actions">
+      <button class="btn" id="legalClose" style="flex:1;">Close</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -365,28 +388,7 @@ const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
 
 const els = {
   welcome: document.getElementById('welcome'),
-  googleBtn: document.getElementById('googleBtn'),
   guestBtn: document.getElementById('guestBtn'),
-  emailBtn: document.getElementById('emailBtn'),
-  emailModal: document.getElementById('emailModal'),
-  emailModalTitle: document.getElementById('emailModalTitle'),
-  emailModalSub: document.getElementById('emailModalSub'),
-  nameFieldWrap: document.getElementById('nameFieldWrap'),
-  confirmFieldWrap: document.getElementById('confirmFieldWrap'),
-  emailNameInput: document.getElementById('emailNameInput'),
-  emailEmailInput: document.getElementById('emailEmailInput'),
-  emailPasswordInput: document.getElementById('emailPasswordInput'),
-  emailPasswordConfirmInput: document.getElementById('emailPasswordConfirmInput'),
-  emailModalError: document.getElementById('emailModalError'),
-  emailModalCancel: document.getElementById('emailModalCancel'),
-  emailModalSubmit: document.getElementById('emailModalSubmit'),
-  emailModalToggle: document.getElementById('emailModalToggle'),
-  emailModalToggleLink: document.getElementById('emailModalToggleLink'),
-  googleModal: document.getElementById('googleModal'),
-  googleNameInput: document.getElementById('googleNameInput'),
-  googleEmailInput: document.getElementById('googleEmailInput'),
-  googleModalCancel: document.getElementById('googleModalCancel'),
-  googleModalContinue: document.getElementById('googleModalContinue'),
   authBadge: document.getElementById('authBadge'),
   authAvatar: document.getElementById('authAvatar'),
   authWho: document.getElementById('authWho'),
@@ -410,6 +412,7 @@ const els = {
   mJaw: document.getElementById('mJaw'),
   mThirds: document.getElementById('mThirds'),
   mSym: document.getElementById('mSym'),
+  frontResults: document.getElementById('frontResults'),
   hairTag: document.getElementById('hairTag'),
   hairList: document.getElementById('hairList'),
   restartBtn: document.getElementById('restartBtn'),
@@ -419,61 +422,24 @@ let modelsReady = false;
 let selectedFile = null;
 let currentUser = null; // { name, email, provider, picture }
 
-/* ---------- Auth: Google + Guest ----------
-   NOTE: This is a self-contained static HTML file with no backend, so a real
-   Google OAuth flow (Google Identity Services) needs a Google Cloud OAuth
-   Client ID registered to this page's origin. Drop yours in below and this
-   will automatically use the real Google popup; until then it falls back to
-   a local "demo" sign-in so the two options are still functionally distinct
-   in the UI (guest vs a named session), with nothing ever sent anywhere.
+/* ---------- Auth: real Google Sign-In + Guest ----------
+   This is a static file with no backend. Sign-in uses Google Identity
+   Services' official rendered button (real account picker, no demo, no
+   fallback fake login). "Continue as Guest" just skips sign-in — it is
+   not a substitute Google login of any kind.
 ------------------------------------------------------------------------- */
-const GOOGLE_CLIENT_ID = '457160020142-gugcc5bo5us43onv635l07npkr00pdih.apps.googleusercontent.com';
+window.__completeGoogleSignIn = function(user){ completeSignIn(user); };
 
-function tryRealGoogleSignIn(){
-  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
-  if (GOOGLE_CLIENT_ID.startsWith('YOUR_GOOGLE_CLIENT_ID')) return false;
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: (response) => {
-      try{
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
-        completeSignIn({ name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' });
-      }catch(e){
-        console.error(e);
-        openGoogleModal();
-      }
-    },
-  });
-  google.accounts.id.prompt((notification) => {
-    // If the real Google prompt can't be shown for any reason (browser
-    // blocked it, no session, popup closed, etc.), fall back to the demo
-    // modal instead of leaving the button looking unresponsive.
-    const blocked = (notification.isNotDisplayed && notification.isNotDisplayed())
-      || (notification.isSkippedMoment && notification.isSkippedMoment());
-    if (blocked) openGoogleModal();
-  });
-  return true;
+function tryLoadGoogleButton(){
+  const ok = window.__renderGoogleBtn && window.__renderGoogleBtn();
+  document.getElementById('googleBtnError').style.display = ok ? 'none' : 'block';
+  return ok;
 }
-
-function openGoogleModal(){
-  els.googleModal.classList.add('active');
-  els.googleNameInput.focus();
-}
-function closeGoogleModal(){
-  els.googleModal.classList.remove('active');
-}
-
-els.googleBtn.addEventListener('click', () => {
-  const usedRealFlow = tryRealGoogleSignIn();
-  if (!usedRealFlow) openGoogleModal();
+tryLoadGoogleButton();
+window.addEventListener('load', () => {
+  if (document.getElementById('googleBtnReal').childElementCount === 0) tryLoadGoogleButton();
 });
-els.googleModalCancel.addEventListener('click', closeGoogleModal);
-els.googleModalContinue.addEventListener('click', () => {
-  const name = els.googleNameInput.value.trim() || 'Google user';
-  const email = els.googleEmailInput.value.trim();
-  closeGoogleModal();
-  completeSignIn({ name, email, provider: 'google-demo' });
-});
+document.getElementById('googleBtnRetry').addEventListener('click', tryLoadGoogleButton);
 
 els.guestBtn.addEventListener('click', () => {
   completeSignIn({ name: 'Guest', provider: 'guest' });
@@ -488,14 +454,14 @@ function completeSignIn(user){
 
 /* ---------- Persistence: keep a Google sign-in across page reloads ----------
    Guest sessions are intentionally NOT persisted — "Continue as Guest" starts
-   fresh every time. A Google (real or demo) session is remembered in this
-   browser via localStorage until the person taps "switch".
+   fresh every time. A real Google session is remembered in this browser via
+   localStorage until the person taps "switch".
 ------------------------------------------------------------------------- */
 const AUTH_STORAGE_KEY = 'faceScanAuthUser';
 
 function saveUserToStorage(user){
   try{
-    if (user.provider === 'google' || user.provider === 'google-demo'){
+    if (user.provider === 'google'){
       localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
     }
   }catch(e){ console.warn('Could not persist sign-in', e); }
@@ -790,7 +756,9 @@ const HAIR_GUIDE = {
     { h: 'Medium length with movement', p: 'Chin-adjacent length adds visual width at the jaw to match the brow width.' },
   ],
   Triangle: [
-    { h: 'Volume on top, tapered sides', p: 'Layers around the temples soften the transition from a narrower forehead to a fuller jaw.' },
+    { h: 'Volume on top, tapered sides', p: 'Adds width up top to balance a jaw that measured wider than the forehead.' },
+    { h: 'Textured fringe', p: 'Draws the eye upward, away from jaw width, without adding bulk at the sides.' },
+    { h: 'Side part with soft layers', p: 'Layers around the temples soften the transition from a narrower forehead to a fuller jaw.' },
   ],
   Diamond: [
     { h: 'Fringe with volume at the crown', p: 'Adds width at the forehead and jaw to balance pronounced cheek width.' },
@@ -841,7 +809,7 @@ function showResults(metrics){
     card.innerHTML = `<h4>${item.h}</h4><p>${item.p}</p>`;
     els.hairList.appendChild(card);
   });
-  els.hairTag.textContent = 'MATCHED TO ' + metrics.shape.toUpperCase() + ' SHAPE';
+  els.hairTag.textConten = 'MATCHED TO ' + metrics.shape.toUpperCase() + ' SHAPE';
 
   // switch panels
   els.panelFront.classList.remove('active');
@@ -884,6 +852,56 @@ els.restartBtn.addEventListener('click', () => {
   els.stepPill1.classList.remove('done');
   els.stepPill1.classList.add('active');
 });
+
+/* ---------- Terms of Use / Privacy Policy (shown in-app, not a page nav) ---------- */
+const LEGAL_TEXT = {
+  terms: `
+    <h4>What the app does</h4>
+    <p>Face Scan analyzes a photo you provide to estimate face shape, jaw angle, facial symmetry, and facial thirds, using an open-source facial landmark model that runs entirely on your device. It then suggests hairstyles based on those measurements.</p>
+    <h4>Not medical or professional advice</h4>
+    <p>Measurements are approximate and sensitive to photo angle, lighting, and head position. Nothing in the app is a medical diagnosis, a clinical assessment, or a rating of attractiveness.</p>
+    <h4>Your content</h4>
+    <p>Photos you upload are processed locally on your device and are not uploaded to any server by the app. You are responsible for only uploading photos you have the right to use.</p>
+    <h4>Account sign-in</h4>
+    <p>If you sign in with Google, authentication is handled directly by Google. The app never receives or stores your Google password.</p>
+    <h4>No warranty</h4>
+    <p>The app is provided "as is," without warranties of any kind. We do not guarantee the accuracy of any measurement or hairstyle suggestion.</p>
+    <h4>Limitation of liability</h4>
+    <p>To the fullest extent permitted by law, the app's developer is not liable for indirect, incidental, or consequential damages arising from your use of the app.</p>
+    <h4>Changes</h4>
+    <p>These terms may be updated from time to time. Continued use of the app after changes means you accept the updated terms.</p>
+  `,
+  privacy: `
+    <h4>Photos you upload</h4>
+    <p>When you upload a photo to scan, it is processed entirely on your own device using an on-device facial landmark model. The photo is never sent to, stored on, or seen by any server operated by the app. Restarting the scan clears it from memory.</p>
+    <h4>Google Sign-In</h4>
+    <p>If you choose "Sign in with Google," authentication is handled directly by Google's own sign-in system. The app receives only your name, email, and profile picture as authorized by you, and stores it only in your device's local browser storage — never on a server operated by the app.</p>
+    <h4>What is stored, and where</h4>
+    <p><b>Uploaded photo</b> — device memory only, cleared on restart, never sent anywhere.<br>
+    <b>Scan measurements</b> — shown once, not stored.<br>
+    <b>Google name/email/picture</b> — local device storage only.</p>
+    <h4>Third parties</h4>
+    <p>The app loads two third-party scripts from their official sources: face-api.js (an open-source facial landmark library) and Google Identity Services (for sign-in). These providers may see standard technical request data as an ordinary function of loading a script, governed by their own privacy policies.</p>
+    <h4>No advertising or tracking</h4>
+    <p>The app does not use advertising networks, analytics trackers, or third-party cookies, and does not sell or share personal data with anyone.</p>
+    <h4>Your choices</h4>
+    <p>You can use the app without signing in via "Continue as Guest." You can clear your stored sign-in at any time using "switch" in the app, or by clearing your browser's site data.</p>
+    <h4>Children</h4>
+    <p>The app is not directed at children and does not knowingly collect information from children.</p>
+  `,
+};
+
+function openLegal(kind){
+  document.getElementById('legalTitle').textContent = kind === 'terms' ? 'Terms of Use' : 'Privacy Policy';
+  document.getElementById('legalBody').innerHTML = LEGAL_TEXT[kind];
+  document.getElementById('legalModal').classList.add('active');
+}
+document.getElementById('termsLink').addEventListener('click', () => openLegal('terms'));
+document.getElementById('privacyLink').addEventListener('click', () => openLegal('privacy'));
+document.getElementById('legalClose').addEventListener('click', () => {
+  document.getElementById('legalModal').classList.remove('active');
+});
 </script>
 </body>
 </html>
+     
