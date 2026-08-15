@@ -66,6 +66,7 @@
     border-radius:8px; padding:10px; font-family:'Space Grotesk',sans-serif; font-size:13px;
   }
 </style>
+<script src="https://unpkg.com/fix-webm-duration@1.0.6/fix-webm-duration.js"></script>
 </head>
 <body>
 
@@ -131,7 +132,7 @@
 
   <div id="stageHolder"><canvas id="stage" width="1080" height="1080"></canvas></div>
   <div class="hint">
-    Each video takes about 3 seconds (real time — it renders the actual animation) and downloads as a <b>.webm</b> file. Most versions of TikTok accept it directly — if yours doesn't, any free "video converter" app can turn it into .mp4 in a few seconds before you upload.
+    Each video is about 3 seconds and downloads as a <b>.webm</b> file (the format browsers can record — an in-browser .mp4 converter isn't possible on this hosting, since that requires server settings GitHub Pages doesn't allow). Try importing it into CapCut directly first — if it's rejected, any free "video converter" app can turn it into .mp4 in a few seconds.
   </div>
 </div>
 
@@ -544,13 +545,28 @@ async function generateVideo({ timeline, needsPhoto, filenamePrefix, button, sta
   recordedChunks = [];
   mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
   mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(recordedChunks, { type: mimeType });
-    const url = URL.createObjectURL(blob);
+  mediaRecorder.onstop = async () => {
+    statusEl.textContent = 'Fixing video duration…';
+    const rawBlob = new Blob(recordedChunks, { type: mimeType });
+
+    // Chrome's MediaRecorder writes WebM files with missing/zero duration
+    // metadata — playback works, but apps (WhatsApp, CapCut, etc.) show
+    // "0:00" for the length. This patches the real duration into the file.
+    let finalBlob = rawBlob;
+    try{
+      finalBlob = await new Promise((resolve, reject) => {
+        if (typeof ysFixWebmDuration !== 'function'){ reject(new Error('fix-webm-duration not loaded')); return; }
+        ysFixWebmDuration(rawBlob, totalDuration, (fixed) => resolve(fixed));
+      });
+    }catch(e){
+      console.warn('Duration fix failed, using original file', e);
+    }
+
+    const url = URL.createObjectURL(finalBlob);
     const a = document.createElement('a');
     a.href = url;
     a.download = filenamePrefix + '-' + Date.now() + '.webm';
-    a.textContent = '⬇ Download Video';
+    a.textContent = '⬇ Download Video (.webm)';
     downloadArea.innerHTML = '';
     downloadArea.appendChild(a);
     downloadArea.style.display = 'block';
