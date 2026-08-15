@@ -157,6 +157,8 @@ const els = {
   downloadBumperArea: document.getElementById('downloadBumperArea'),
 };
 const ctx = els.canvas.getContext('2d');
+ctx.imageSmoothingEnabled = true;
+ctx.imageSmoothingQuality = 'high';
 const W = els.canvas.width, H = els.canvas.height;
 
 /* ============================================================
@@ -269,6 +271,13 @@ function sceneIntro(t){
 }
 
 function sceneScan(t, photo){
+  ctx.fillStyle = '#F2FBF9';
+  ctx.font = `800 ${W*0.052}px 'Space Grotesk'`;
+  ctx.textAlign = 'center';
+  ctx.fillText('Face', W/2 - W*0.055, H*0.10);
+  ctx.fillStyle = '#5EEAD4';
+  ctx.fillText('Scan', W/2 + W*0.068, H*0.10);
+
   ctx.fillStyle = '#5EEAD4';
   ctx.font = `400 ${W*0.03}px 'Space Mono'`;
   ctx.textAlign = 'center';
@@ -354,6 +363,13 @@ document.getElementById('sldShape').addEventListener('change', (e) => {
 });
 
 function sceneMetrics(t){
+  ctx.fillStyle = '#F2FBF9';
+  ctx.font = `800 ${W*0.036}px 'Space Grotesk'`;
+  ctx.textAlign = 'left';
+  ctx.fillText('Face', W*0.09, H*0.075);
+  ctx.fillStyle = '#5EEAD4';
+  ctx.fillText('Scan', W*0.09 + W*0.082, H*0.075);
+
   ctx.fillStyle = '#5EEAD4';
   ctx.font = `400 ${W*0.03}px 'Space Mono'`;
   ctx.textAlign = 'left';
@@ -543,7 +559,7 @@ async function generateVideo({ timeline, needsPhoto, filenamePrefix, button, sta
   }
 
   recordedChunks = [];
-  mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 6_000_000 });
+  mediaRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 12_000_000 });
   mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) recordedChunks.push(e.data); };
   mediaRecorder.onstop = async () => {
     statusEl.textContent = 'Fixing video duration…';
@@ -574,6 +590,11 @@ async function generateVideo({ timeline, needsPhoto, filenamePrefix, button, sta
     button.disabled = false;
     if (otherButton) otherButton.disabled = false;
   };
+
+  // Draw the very first frame synchronously *before* the recorder starts,
+  // so the canvas already has real content the instant capture begins —
+  // otherwise captureStream can grab a stray blank/leftover frame first.
+  drawFrame(0, photo, timeline);
 
   // Passing a timeslice forces periodic dataavailable events, which fixes a
   // known Chrome bug where recorded WebM files otherwise report the wrong
