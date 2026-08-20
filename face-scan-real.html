@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#060B12">
+<meta name="color-scheme" content="dark">
+<title>FaceScan: AI Face Analysis</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAIeElEQVR4nO2d0W3dOBBFmUWA/dkeApfg71SQDgJ3khSQdGKkg1SQb5dgpJP9IJbLUBRNaUjOneE9WCwcW+89PvHokqIo6t37v/8JhNzlL+0CENtQICKCAhERFIiIoEBEBAUiIigQEUGBiAgKRERQICKCAhERFIiIoEBEBAUiIigQEUGBiAgKRERQICKCAhERFKjF08vr08urdimgoUCnJHXoUAMKVKeQhg6dQYGIiPfaBVhBnh/Pjw/tDdJmxauq29z4LGe8c39jYU/rc1bT8bXtv957ZzdskUAF/ZX6/Pjw4dPn/vfZsKvEPhAR4Vygzo7LKNw3WEc8N2FPL6/ra7T4xHYvygE+BcKptlgGnPIMx6FAKsHTJmmEVjA5rgQCP9DTYBJsCW9gVaCiJqxUTDWKrBS+ismzsOIyZ6wPQxUQoygVPv7S6BiSvZHoxWfmHz59/v3zx6Q3X/xdZmAygQgO9gQqjlFzh2yOg+9iT6CcX1+/aBdBivWvYO8srDiFmdpHmU0sfCq/xYEi2wlE1DEm0PEY/f3zR2PGBTLH7KxOWwPHkkAWE/4q5hwyI1DDHosh1Oi62XLIhkA7ZE+OIYcMCNRjj60Q6jlztOIQukD92WPLoR5MOAQtkMuW69LAFb5D0AJdxV8I4QM3Eu37xrwb4+bHWxxHF0oEVgLJ4xo5hIZcdUFr0bAEIuZwKBBmCJm+6NsAS6C8gUdr7BVB3i1YAkXkE5zRQkgeP7CTvrEEGjjwg+bQEACHhbAEconX3k8ESKDh484MoQUACeQS3/ET3AvkMoSgQBGI1037gWrFUASah1YIuW+8IhACuYyfqeCEEIRAs1kfQpvET9hEoMDe9DT0BfLXfq2JH5BWTF+gZTCEZqAsEONHAkIIqQmk8igulyGk+1AzHYHUj5tJKJ58ae1SBYF0H8XlKYQQHmoG0YleXKOTHNpn7CdH4bae6n0qsUY3rIB7xN2FcMeP2iqt1cWRV2rUGRhjN5Nz3EW6y0xr3lh4/M5xv5hLozX2nO0W3ZN5uDtTwyqNYk/IhKbIRxSiQBEraTTVQvyvjytQZKpGyCGEr04EXaAIbBrN8A/wazawIVBkhkZQIWRLnYglgSLDNbrt0EDzLKoTsSdQJO7r/mG0tOXs8ZLOD8pL/uvrF/mNz1rzGtQupsq/bf+VoPxP1c1uXNyoxs+bH1T908dv3y99NBRWE6gK2kV+tPLMwJVAz48P1c5ET0Ve6gl1bnlM2Vg805FTAHE1/h7VRjA+/ObDp89nTZK86WwvMt94VfFsnoFFUsR2AhW7PnWt0plaPNYvrTQt78/m5Qn/PRHM9DOdGtgWqOB4WTE2amPPt/vfKqoTJU7Nlid7gukmrJM3G7Vi42Kze/2VRoPljNUJpHVi0j/82GjIeuJHcUhQZWLQUoGKYZL1YT71mpq6OunnlTvWVR8o/NkNajxfLDTruxpCjfhpq9NTJLt4EyhcOecK4tjofLk/bxIOBbrEmUZFCFUDKdi8/DmWpQLBhvmlNAJUR3HH6tyVgTyYlvuRRgJhZ7QltHap5m09sA6FbBQ7Uowmo6G4M3fvA51RjB9+/PYdWXdF1EaiEZYmOaM6Zt05lr0e3SxnAv1P8iNegqhOd8y3WVw8TCjQqRMpI2MHqNiGJkXUOtERxfh904A49pP//977TEX9XGS7BBpe35tnknIChVXH0NXaTZFz/GH4Z91GPX6C+wRSSYWtMkk/gcLoIyk/2b5Xc2dXwW7PbJxhEkL8BE8JhHy4O84k8wINr5JGzMhn3fszCUKgG3fmWq8AoUkg7VcAEaif2d68GTDDV/OwnkkoArVDyOjOvUS/STjxE0DOwsLJOhuLvalGS/8vZ5Qn/pDflJj+CuIQRAId19kAn3+zhiKTihkmIDkEemPh+lvyLoXKjeVgJCDfoAgqELEChEBFFK9PZpxlEhuo76UqEH2gcFjUAmTvNFi/OifmboFIIF1MxA8siAIhT5fOWdmVxoyfgCnQShg/QkAFYgjlwMZPgBUoLHHIRPwg2xOQBbLC4kFFNKAFmhpCjJ8hQAtkhZ1DCF2gSSHE+BkFukBhhENPL6/xv1FFOpKH0JCPM2FPMCGQkOMDUKbGT+fzVtxgQyATw0IDe0JW4ifgXEydRyFf/Pm43k//IsvHLYuJgpjL+E0CZUprD0MqJrVfZ5FWvHnR3lVflb9E0j5aNM+kQOHuLj6r3XvtY7UMtwUCnO/cg5km7DhvetJevpFAcpZ9u+HY6EQPoec5X29W25tb7jaoaEag2RM6nx8fOt+zf8tLn974JzJmBAqD+s4LEIaQIXuCoT5QJO1cQ72EHux+HUsJlHNpaHH9la9LIWTXnmBXoGBkePpNTNsTTAsU+hzSuvDeE0LW7QnWBTKNA3uCA4HaIaQ772eHMSHzAgWbnSEf8RN8CBROHEKYdlgNITf2BDcCBTs55MmeYG4gsU1aJ0/lCepnpAf/3FhLFB8/CZRIOQQSSGjlGYtDgXLU60y9ALNxLhCZjTeB0OZFoJVnON4ECn/O+VJvQfJesz97gq050fcQnpEJ5zi7lCbH1Wl8lViFi8+f/Z2un+GwCauysjnbx56wQwIlFgwwbtJs5WwkUPizORtV2Y5HmXvYpQnLyZsz+Roa6YcN7Ql7CnS8i0/3fUyzVxN2xllzFn9/PI3f05Uq/seBqlRvRC/WNmhsc3xJ2KzvnNhUoNA8Y2oEzFlK7WlP2FmgNkeHtlWkzY6d6B7cXwQdBQU6xfdF0FGwCSMimEBEBAUiIigQEUGBiAgKRERQICKCAhERFIiIoEBEBAUiIigQEUGBiAgKRERQICKCAhERFIiIoEBEBAUiIigQEUGBiAgKRERQICKCAhERFIiIoEBEBAUiIigQEfEvm3yZSjYWkDYAAAAASUVORK5CYII=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #060B12;
+    --panel: #0B131E;
+    --line: rgba(94,234,212,0.16);
+    --signal: #5EEAD4;
+    --signal-dim: rgba(94,234,212,0.35);
+    --accent: #FF6B5B;
+    --ink: #EAF2F0;
+    --ink-dim: #7C8B95;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{ height:100%; background:var(--bg); }
+  *{
+    -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+  }
+  input, textarea{ -webkit-user-select:text; user-select:text; }
+  body{
+    background: radial-gradient(ellipse at 50% -10%, rgba(94,234,212,0.07), transparent 50%), var(--bg);
+    color:var(--ink);
+    font-family:'Space Grotesk', sans-serif;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding: 30px 16px 60px;
+    position:relative;
+  }
+  .wrap{ width:100%; max-width:480px; }
+
+  .welcome{
+    position:fixed; inset:0; z-index:100;
+    background: radial-gradient(ellipse at 50% 30%, rgba(94,234,212,0.10), transparent 55%), var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    padding:30px; text-align:center;
+    transition: opacity .5s ease, visibility .5s ease;
+  }
+  .welcome.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  .welcome-ring{
+    width:96px; height:96px; border-radius:50%;
+    border:1.5px solid var(--signal-dim);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:26px; position:relative;
+    animation: ringIn .8s ease both;
+  }
+  .welcome-ring::before{
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:1px solid var(--signal-dim); opacity:.6;
+    animation: expand 2.4s ease-out infinite;
+  }
+  .welcome-ring::after{
+    content:''; position:absolute; inset:-10px; border-radius:50%;
+    border:1px solid var(--signal-dim); opacity:.6;
+    animation: expand 2.4s ease-out infinite 1.2s;
+  }
+  @keyframes expand{ from{ transform:scale(0.8); opacity:.6; } to{ transform:scale(1.6); opacity:0; } }
+  @keyframes ringIn{ from{ opacity:0; transform:scale(0.6);} to{ opacity:1; transform:scale(1);} }
+  .welcome-ring span{ font-size:30px; color:var(--signal); }
+  .welcome h1{
+    font-size:30px; font-weight:700; letter-spacing:-0.01em; line-height:1.2;
+    opacity:0; animation: fadeUp .7s ease .25s forwards;
+  }
+  .welcome p{
+    font-size:13.5px; color:var(--ink-dim); margin-top:12px; line-height:1.6; max-width:36ch;
+    opacity:0; animation: fadeUp .7s ease .4s forwards;
+  }
+  @keyframes fadeUp{ from{ opacity:0; transform:translateY(10px);} to{ opacity:1; transform:translateY(0);} }
+  .welcome-btn{
+    margin-top:30px; font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
+    background: var(--signal); color:#062019; border:none; border-radius:30px;
+    padding:15px 34px; cursor:pointer;
+    opacity:0; animation: fadeUp .7s ease .55s forwards;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+  }
+  .welcome-btn:active{ filter:brightness(0.92); transform: scale(0.95); box-shadow: 0 2px 16px -2px rgba(94,234,212,0.7); }
+
+  .auth-actions{ display:flex; flex-direction:column; gap:10px; margin-top:30px; width:100%; max-width:280px; opacity:0; animation: fadeUp .7s ease .55s forwards; }
+  .auth-btn{
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px;
+    border-radius:30px; padding:14px 22px; cursor:pointer; width:100%;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    border:none;
+  }
+  .auth-btn:active{ transform: scale(0.96); }
+  .auth-btn.google{ background:#EAF2F0; color:#1F1F1F; }
+  .auth-btn.google:active{ filter:brightness(0.94); box-shadow: 0 2px 16px -2px rgba(234,242,240,0.5); }
+  .auth-btn.google svg{ width:17px; height:17px; flex-shrink:0; }
+  .auth-btn.guest{ background:transparent; color:var(--ink-dim); border:1px solid var(--line); }
+  .auth-btn.guest:active{ background:rgba(94,234,212,0.08); border-color:var(--signal-dim); color:var(--ink); }
+  .auth-btn.email{ background:transparent; color:var(--signal); border:1px solid var(--signal-dim); }
+  .auth-btn.email svg{ width:16px; height:16px; }
+  .auth-btn.email:active{ background:rgba(94,234,212,0.08); }
+  .auth-divider{ display:flex; align-items:center; gap:10px; width:100%; max-width:280px; margin:2px 0; }
+  .auth-divider::before, .auth-divider::after{ content:''; flex:1; height:1px; background:var(--line); }
+  .auth-divider span{ font-family:'Space Mono', monospace; font-size:10px; color:var(--ink-dim); }
+
+  .auth-badge{ display:none; align-items:center; gap:8px; font-family:'Space Mono', monospace; font-size:10.5px; color:var(--ink-dim); margin-bottom:10px; }
+  .auth-badge .who{ color:var(--signal); }
+  .auth-badge .avatar{ width:18px; height:18px; border-radius:50%; object-fit:cover; border:1px solid var(--signal-dim); }
+  .auth-badge .avatar.fallback{ display:flex; align-items:center; justify-content:center; background:rgba(94,234,212,0.12); color:var(--signal); font-size:9px; font-weight:700; }
+  .auth-badge .switch{ margin-left:auto; text-decoration:underline; text-underline-offset:2px; cursor:pointer; color:var(--ink-dim); }
+  .auth-badge .switch:active{ color:var(--signal); }
+
+  .auth-modal{
+    position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center;
+    background: rgba(6,11,18,0.7); padding:24px;
+  }
+  .auth-modal.active{ display:flex; }
+  .auth-modal-card{
+    width:100%; max-width:340px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px;
+  }
+  .auth-modal-card h3{ font-size:16px; margin-bottom:6px; }
+  .auth-modal-card p{ font-size:12px; color:var(--ink-dim); line-height:1.5; margin-bottom:16px; }
+  .auth-modal-card input{
+    width:100%; background:#0E1A26; border:1px solid var(--line); border-radius:8px; color:var(--ink);
+    font-family:'Space Grotesk', sans-serif; font-size:13.5px; padding:12px 14px; margin-bottom:12px;
+  }
+  .auth-modal-card input:focus{ outline:none; border-color:var(--signal-dim); }
+  .auth-modal-actions{ display:flex; gap:10px; margin-top:4px; }
+  .auth-modal-actions button{ flex:1; }
+  .auth-modal-actions .btn{ margin-top:0; }
+  .auth-modal-actions .btn.ghost{ margin-top:0; }
+  .auth-modal-error{ color:var(--accent); font-size:11.5px; margin:-6px 0 12px; line-height:1.5; }
+  .auth-modal-toggle{ font-size:11.5px; color:var(--ink-dim); text-align:center; margin-top:16px; }
+  .auth-modal-toggle .link{ color:var(--signal); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  .field-signup-only{ display:block; }
+
+  .legal-card{ max-width:420px; max-height:80vh; display:flex; flex-direction:column; padding:22px 22px 16px; }
+  .plan-card{ border:1.5px solid var(--line); border-radius:14px; padding:16px 18px; margin-bottom:12px; position:relative; cursor:pointer; transition: border-color .15s ease, background .15s ease; }
+  .plan-card.selected{ border-color:var(--signal); background:rgba(94,234,212,0.06); }
+  .plan-card .badge{ position:absolute; top:-10px; left:16px; background:var(--signal); color:#062019; font-family:'Space Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:.05em; padding:3px 10px; border-radius:20px; }
+  .plan-card .plan-name{ font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em; }
+  .plan-card .plan-price{ font-size:22px; font-weight:700; margin-top:6px; }
+  .plan-card .plan-price span{ font-size:12px; font-weight:400; color:var(--ink-dim); }
+  .plan-card .plan-sub{ font-size:11.5px; color:var(--ink-dim); margin-top:4px; }
+
+  .onboard-inner{ max-width:420px; margin:0 auto; padding-top:14vh; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .onboard-step-label{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.16em; color:var(--signal); opacity:0; animation: onbFadeUp .5s ease .05s forwards; }
+  .onboard-title{ font-size:26px; font-weight:700; margin-top:10px; opacity:0; animation: onbFadeUp .5s ease .15s forwards; }
+  .onboard-sub{ font-size:13px; color:var(--ink-dim); margin-top:8px; line-height:1.5; opacity:0; animation: onbFadeUp .5s ease .25s forwards; }
+  @keyframes onbFadeUp{ from{ opacity:0; transform:translateY(12px); } to{ opacity:1; transform:translateY(0); } }
+
+  .gender-cards{ display:flex; gap:14px; width:100%; margin-top:34px; }
+  .gender-card{
+    flex:1; background:var(--panel); border:1.5px solid var(--line); border-radius:16px;
+    padding:28px 10px; display:flex; flex-direction:column; align-items:center; gap:10px;
+    cursor:pointer; font-family:'Space Grotesk',sans-serif; color:var(--ink);
+    opacity:0; transform:translateY(16px) scale(0.96);
+    animation: onbFadeUp .5s ease forwards;
+    transition: border-color .18s ease, background .18s ease, transform .12s ease;
+  }
+  #genderMaleBtn{ animation-delay: .35s; }
+  #genderFemaleBtn{ animation-delay: .45s; }
+  .gender-card .gender-icon{ font-size:34px; color:var(--ink-dim); transition: color .18s ease; }
+  .gender-card .gender-label{ font-size:14px; font-weight:600; }
+  .gender-card:active{ transform: scale(0.96); }
+  .gender-card.selected{ border-color:var(--signal); background:rgba(94,234,212,0.08); }
+  .gender-card.selected .gender-icon{ color:var(--signal); }
+
+  .dob-row{ display:flex; gap:10px; width:100%; margin-top:30px; opacity:0; animation: onbFadeUp .5s ease .35s forwards; }
+  .dob-select{
+    flex:1; background:var(--panel); border:1.5px solid var(--line); border-radius:10px;
+    color:var(--ink); font-family:'Space Grotesk',sans-serif; font-size:14px; padding:14px 8px;
+    text-align:center; appearance:none; -webkit-appearance:none;
+  }
+  .dob-select:focus{ outline:none; border-color:var(--signal-dim); }
+  .legal-scroll{ overflow-y:auto; flex:1; margin-bottom:14px; }
+  .legal-scroll h3{ font-size:18px; margin-bottom:4px; }
+  .legal-updated{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--ink-dim); margin-bottom:16px; }
+  .legal-scroll h4{ font-size:13px; color:var(--signal); margin-top:16px; margin-bottom:6px; }
+  .legal-scroll p, .legal-scroll li{ font-size:12.5px; color:#CDD8D6; line-height:1.55; margin-bottom:8px; }
+  .legal-scroll ul{ padding-left:18px; }
+  footer .footer-link{ color:var(--ink-dim); text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+  footer .footer-link:active{ color:var(--signal); }
+
+  .welcome-steps{ display:flex; gap:22px; margin-top:34px; opacity:0; animation: fadeUp .7s ease .7s forwards; }
+  .welcome-steps div{ font-family:'Space Mono', monospace; font-size:10px; color:var(--ink-dim); text-align:center; }
+  .welcome-steps div b{ display:block; color:var(--signal); font-size:16px; margin-bottom:4px; }
+
+  .eyebrow{ font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--signal); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background:var(--signal); box-shadow:0 0 8px var(--signal); animation: pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  h1.title{ font-size:27px; font-weight:700; letter-spacing:-0.01em; line-height:1.18; }
+  .sub{ font-size:13px; color:var(--ink-dim); margin-top:10px; line-height:1.55; max-width:44ch; }
+
+  .stepper{ display:flex; gap:8px; margin-top:20px; }
+  .step-pill{ flex:1; font-family:'Space Mono', monospace; font-size:10px; text-align:center; padding:8px 4px; border-radius:20px; border:1px solid var(--line); color:var(--ink-dim); letter-spacing:.03em; }
+  .step-pill.active{ border-color:var(--signal); color:var(--signal); }
+  .step-pill.done{ border-color:var(--signal-dim); color:var(--signal); background:rgba(94,234,212,0.06); }
+
+  .panel{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:20px; margin-top:16px; display:none; }
+  .panel.active{ display:block; }
+  .panel-title{ font-family:'Space Mono', monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--signal); margin-bottom:14px; }
+  .panel-hint{ font-size:12px; color:var(--ink-dim); margin:-8px 0 14px; line-height:1.5; }
+
+  .scan-frame{
+    position:relative; aspect-ratio: 4/5; max-height: 440px; border-radius:28px; overflow:hidden;
+    background: radial-gradient(circle at 50% 40%, #0E1A26 0%, #060B12 75%);
+    border:1px solid var(--line);
+    box-shadow: 0 0 0 1px rgba(94,234,212,0.05), 0 20px 60px -20px rgba(94,234,212,0.15);
+  }
+  .scan-frame input[type=file]{ position:absolute; inset:0; opacity:0; cursor:pointer; z-index:20; }
+  .scan-frame img.photo{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; filter: saturate(0.9) contrast(1.03); }
+  .scan-frame canvas.overlay{ position:absolute; inset:0; width:100%; height:100%; display:none; z-index:5; pointer-events:none; }
+  .vignette{ position:absolute; inset:0; z-index:4; pointer-events:none; background: radial-gradient(ellipse 62% 78% at 50% 46%, transparent 60%, rgba(6,11,18,0.55) 100%); }
+  .corner{ position:absolute; width:22px; height:22px; border:1.5px solid var(--signal-dim); z-index:6; opacity:.8; }
+  .corner.tl{ top:14px; left:14px; border-right:none; border-bottom:none; border-top-left-radius:8px; }
+  .corner.tr{ top:14px; right:14px; border-left:none; border-bottom:none; border-top-right-radius:8px; }
+  .corner.bl{ bottom:14px; left:14px; border-right:none; border-top:none; border-bottom-left-radius:8px; }
+  .corner.br{ bottom:14px; right:14px; border-left:none; border-top:none; border-bottom-right-radius:8px; }
+
+  .drop-msg{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; color:var(--ink-dim); font-size:13px; padding:24px; gap:10px; z-index:3; }
+  .drop-msg .ring{ width:56px; height:56px; border-radius:50%; border:1.5px dashed var(--signal-dim); display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--signal); }
+
+  .sweep{
+    position:absolute; left:-10%; right:-10%; height:130px; z-index:10; display:none;
+    top:-130px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(94,234,212,0.05) 30%,
+      rgba(94,234,212,0.5) 48%,
+      rgba(94,234,212,0.85) 50%,
+      rgba(94,234,212,0.5) 52%,
+      rgba(94,234,212,0.05) 70%,
+      transparent 100%);
+    mix-blend-mode: screen;
+    animation: scanline 2.4s cubic-bezier(.45,0,.55,1) infinite;
+  }
+  @keyframes scanline{
+    0%{ top:-130px; }
+    50%{ top:100%; }
+    100%{ top:-130px; }
+  }
+  .scan-grid{
+    position:absolute; inset:0; z-index:9; display:none;
+    background-image: repeating-linear-gradient(0deg, var(--line) 0 1px, transparent 1px 34px), repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 34px);
+    opacity:.35;
+    animation: gridPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes gridPulse{ 0%,100%{ opacity:.28; } 50%{ opacity:.55; } }
+  .scan-ring{
+    position:absolute; z-index:11; display:none; border:1.5px solid rgba(94,234,212,0.55); border-radius:50%;
+    left:50%; top:46%; width:64%; aspect-ratio:1/1; transform:translate(-50%,-50%) scale(0.9);
+    box-shadow: 0 0 24px -4px rgba(94,234,212,0.5), inset 0 0 24px -6px rgba(94,234,212,0.4);
+    animation: ringPulse 2.4s ease-in-out infinite;
+  }
+  @keyframes ringPulse{
+    0%,100%{ transform:translate(-50%,-50%) scale(0.88); opacity:.35; }
+    50%{ transform:translate(-50%,-50%) scale(1.02); opacity:.85; }
+  }
+  .scan-caption{ position:absolute; bottom:12px; left:12px; right:12px; z-index:15; display:none; font-family:'Space Mono', monospace; font-size:10.5px; color:var(--signal); background: rgba(6,11,18,0.7); padding:8px 10px; border-radius:10px; border:1px solid var(--line); }
+
+  .btn{ font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:14px; background: var(--signal); color:#062019; border:none; border-radius:10px; padding:15px; width:100%; cursor:pointer; margin-top:16px; letter-spacing:.01em; transition: transform .12s ease, box-shadow .12s ease, filter .12s ease; box-shadow: 0 0 0 rgba(94,234,212,0); }
+  .btn:disabled{ background:#1D2731; color:#5B6A73; cursor:not-allowed; box-shadow:none; }
+  .btn:not(:disabled):hover{ box-shadow: 0 4px 20px -4px rgba(94,234,212,0.5); }
+  .btn:not(:disabled):active{ transform: scale(0.96); filter:brightness(0.92); box-shadow: 0 2px 10px -2px rgba(94,234,212,0.6); }
+  .btn.ghost{ background:transparent; border:1px solid var(--line); color:var(--ink-dim); margin-top:10px; }
+  .btn.ghost:not(:disabled):active{ background:rgba(94,234,212,0.08); border-color:var(--signal-dim); }
+
+  .status{ font-family:'Space Mono', monospace; font-size:11px; color:var(--accent); margin-top:10px; min-height:14px; line-height:1.5; }
+  .status.ok{ color: var(--signal); }
+
+  .results{ display:none; margin-top:16px; }
+  .metric{ display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid var(--line); opacity:0; transform:translateY(6px); animation: rise .5s ease forwards; }
+  .metric:nth-child(1){ animation-delay:.05s; } .metric:nth-child(2){ animation-delay:.15s; }
+  .metric:nth-child(3){ animation-delay:.25s; } .metric:nth-child(4){ animation-delay:.35s; }
+  .metric:nth-child(5){ animation-delay:.45s; }
+  .metric:last-of-type{ border-bottom:none; }
+  @keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+  .metric .label{ font-size:12.5px; color:var(--ink-dim); }
+  .metric .value{ font-family:'Space Mono', monospace; font-size:15px; font-weight:700; color:var(--ink); }
+
+  .note{ margin-top:16px; font-size:11.5px; line-height:1.6; color:var(--ink-dim); border-top:1px solid var(--line); padding-top:14px; }
+  .warn-box{ margin-top:14px; padding:12px 14px; border-radius:8px; border:1px solid rgba(255,107,91,0.35); background:rgba(255,107,91,0.06); font-size:11.5px; color:#FFB3A8; line-height:1.55; }
+
+  .hair-header{ display:flex; align-items:center; gap:8px; margin-top:22px; margin-bottom:12px; }
+  .hair-header .tag{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--signal); border:1px solid var(--signal-dim); padding:3px 8px; border-radius:20px; }
+  .hair-card{ border:1px solid var(--line); border-radius:10px; padding:14px; margin-bottom:10px; background: linear-gradient(135deg, rgba(94,234,212,0.05), transparent); opacity:0; transform:translateY(6px); animation: rise .5s ease forwards; }
+
+  .exercise-streak{ font-family:'Space Mono',monospace; font-size:12px; color:var(--signal); margin:14px 0; text-align:center; }
+  .day-grid{ display:grid; grid-template-columns:repeat(6,1fr); gap:8px; margin-top:6px; }
+  .day-cell{ aspect-ratio:1/1; border-radius:50%; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim); cursor:pointer; position:relative; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; }
+  .day-cell.done{ background:rgba(94,234,212,0.14); border-color:var(--signal); color:var(--signal); }
+  .day-cell.locked{ opacity:.35; cursor:not-allowed; }
+  .day-detail{ margin-top:18px; border:1px solid var(--line); border-radius:12px; padding:16px; background:var(--panel); }
+  .day-detail-head{ display:flex; justify-content:space-between; align-items:center; font-size:14px; font-weight:600; margin-bottom:12px; }
+  .ex-item{ margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid var(--line); }
+  .ex-item:last-child{ border-bottom:none; margin-bottom:0; padding-bottom:0; }
+  .ex-item h4{ font-size:13.5px; margin-bottom:4px; }
+  .ex-item p{ font-size:12px; color:var(--ink-dim); line-height:1.5; }
+  .ex-item .reps{ font-family:'Space Mono',monospace; font-size:10.5px; color:var(--signal); margin-top:4px; display:inline-block; }
+  .hair-card h4{ font-size:13.5px; margin-bottom:4px; color:var(--ink); }
+  .hair-card p{ font-size:11.5px; color:var(--ink-dim); line-height:1.5; }
+
+  footer{ margin-top:26px; font-family:'Space Mono', monospace; font-size:10.5px; color:var(--ink-dim); text-align:center; line-height:1.7; }
+</style>
+</head>
+<body>
+
+<div class="welcome" id="welcome">
+  <div class="welcome-ring"><span>◎</span></div>
+  <h1>Face Scan</h1>
+  <p>A real landmark-based scan of your front-facing photo — face shape, jaw angle, symmetry, facial thirds — matched to hairstyles that fit what's actually measured.</p>
+  <div class="auth-actions">
+    <div id="googleBtnReal" style="display:flex; justify-content:center; min-height:44px;"></div>
+    <div id="googleBtnError" style="display:none; text-align:center; font-family:'Space Mono',monospace; font-size:11px; color:var(--accent); margin-top:4px;">
+      Couldn't load Google Sign-In — check your connection and <span id="googleBtnRetry" style="text-decoration:underline; cursor:pointer;">tap to retry</span>.
+    </div>
+    <button class="auth-btn guest" id="guestBtn">Continue as Guest</button>
+  </div>
+  <div class="welcome-steps">
+    <div><b>01</b>Front photo</div>
+    <div><b>02</b>Results</div>
+  </div>
+</div>
+<script>
+  // Google's own "One Tap" prompt() has a built-in cooldown — after it's
+  // dismissed a couple of times, Google silently stops showing it on that
+  // origin for a while. Rendering Google's real button instead avoids that
+  // entirely: every tap opens the actual account chooser directly, and
+  // there is no local fallback/demo — sign-in is real or it doesn't happen.
+  window.__renderGoogleBtn = function(){
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) return false;
+    google.accounts.id.initialize({
+      client_id: '457160020142-gugcc5bo5us43onv635l07npkr00pdih.apps.googleusercontent.com',
+      callback: (response) => {
+        try{
+          const payload = JSON.parse(atob(response.credential.split('.')[1]));
+          window.__completeGoogleSignIn({ name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' });
+        }catch(e){
+          console.error(e);
+        }
+      },
+    });
+    const target = document.getElementById('googleBtnReal');
+    target.innerHTML = '';
+    google.accounts.id.renderButton(target, {
+      theme: 'filled_white', size: 'large', shape: 'pill', width: 320, text: 'signin_with', locale: 'en',
+    });
+    return true;
+  };
+</script>
+
+<div class="onboard" id="onboardGender" style="display:none; position:fixed; inset:0; z-index:95; background:var(--bg); overflow-y:auto; padding:0 18px;">
+  <div class="onboard-inner">
+    <div class="onboard-step-label">STEP 1 OF 2</div>
+    <h2 class="onboard-title">What's your gender?</h2>
+    <p class="onboard-sub">This helps tailor hairstyle suggestions to you.</p>
+    <div class="gender-cards">
+      <button class="gender-card" id="genderMaleBtn" data-gender="male">
+        <span class="gender-icon">♂</span>
+        <span class="gender-label">Male</span>
+      </button>
+      <button class="gender-card" id="genderFemaleBtn" data-gender="female">
+        <span class="gender-icon">♀</span>
+        <span class="gender-label">Female</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="onboard" id="onboardDOB" style="display:none; position:fixed; inset:0; z-index:95; background:var(--bg); overflow-y:auto; padding:0 18px;">
+  <div class="onboard-inner">
+    <div class="onboard-step-label">STEP 2 OF 2</div>
+    <h2 class="onboard-title">When's your birthday?</h2>
+    <p class="onboard-sub">Kept on this device only — never sent anywhere.</p>
+    <div class="dob-row">
+      <select id="dobDay" class="dob-select"></select>
+      <select id="dobMonth" class="dob-select"></select>
+      <select id="dobYear" class="dob-select"></select>
+    </div>
+    <button class="btn" id="dobContinueBtn" style="margin-top:26px;" disabled>Continue</button>
+  </div>
+</div>
+
+<div class="paywall" id="paywall" style="display:none; position:fixed; inset:0; z-index:90; background:var(--bg); overflow-y:auto; padding:28px 18px 40px;">
+  <div style="max-width:420px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:22px;">
+      <div class="welcome-ring" style="width:64px; height:64px; margin:0 auto 16px;"><span style="font-size:20px;">◎</span></div>
+      <h2 style="font-size:22px; font-weight:700;">Unlock Face Scan</h2>
+      <p style="font-size:13px; color:var(--ink-dim); margin-top:8px; line-height:1.55;">Start with a 7-day free trial. Cancel anytime in Play Store before it ends and you won't be charged.</p>
+    </div>
+
+    <div id="planCards">
+      <div style="text-align:center; padding:30px 0; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim);" id="planLoading">Loading plans…</div>
+    </div>
+
+    <div id="paywallError" style="display:none; margin-top:14px; padding:12px 14px; border-radius:8px; border:1px solid rgba(255,107,91,0.35); background:rgba(255,107,91,0.06); font-size:12px; color:#FFB3A8; line-height:1.5;"></div>
+
+    <button class="btn" id="paywallContinueBtn" style="margin-top:18px; display:none;">Start Free Trial</button>
+    <button class="btn ghost" id="paywallRestoreBtn" style="margin-top:10px;">Restore Purchase</button>
+
+    <p style="font-size:10.5px; color:var(--ink-dim); text-align:center; margin-top:18px; line-height:1.6;">
+      Subscriptions auto-renew at the price shown unless canceled at least 24 hours before the trial or billing period ends. Manage or cancel anytime in your Google Play account subscriptions.<br>
+      <span class="footer-link" id="paywallTerms" style="text-decoration:underline; cursor:pointer;">Terms of Use</span> &nbsp;·&nbsp;
+      <span class="footer-link" id="paywallPrivacy" style="text-decoration:underline; cursor:pointer;">Privacy Policy</span>
+    </p>
+  </div>
+</div>
+
+<div class="wrap">
+  <header>
+    <div class="auth-badge" id="authBadge">
+      <span class="avatar fallback" id="authAvatar"></span>
+      <span>Signed in as <span class="who" id="authWho"></span></span>
+      <span class="switch" id="authSwitch">switch</span>
+    </div>
+    <div class="eyebrow"><span class="dot"></span>Live structural scan</div>
+    <h1 class="title">Scan your face, find your cut</h1>
+    <p class="sub">Everything runs in your browser. No photo is uploaded anywhere, no score, no comparison to anyone else.</p>
+  </header>
+
+  <div class="stepper">
+    <div class="step-pill active" id="stepPill1">01 · Front</div>
+    <div class="step-pill" id="stepPill2">02 · Side</div>
+    <div class="step-pill" id="stepPill3">03 · Results</div>
+    <div class="step-pill" id="stepPill4">04 · Exercises</div>
+  </div>
+
+  <div class="panel active" id="panelFront">
+    <div class="panel-title">Front-facing photo</div>
+    <div class="panel-hint">Look straight at the camera, even lighting, hair off your forehead if possible.</div>
+    <div class="scan-frame" id="frameFront">
+      <input type="file" accept="image/*" id="fileFront">
+      <div class="drop-msg" id="dropFront"><div class="ring">◎</div>Tap to upload a front photo</div>
+      <img class="photo" id="photoFront" alt="">
+      <div class="vignette"></div>
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div class="scan-grid" id="gridFront"></div>
+      <div class="scan-ring" id="ringFront"></div>
+      <div class="sweep" id="sweepFront"></div>
+      <canvas class="overlay" id="overlayFront"></canvas>
+      <div class="scan-caption" id="captionFront">Initializing…</div>
+    </div>
+    <button class="btn" id="scanFrontBtn" disabled>Choose a photo</button>
+    <div class="status" id="statusFront">Loading measurement model…</div>
+  </div>
+
+  <div class="panel" id="panelSide">
+    <div class="panel-title">Side profile photo</div>
+    <div class="panel-hint">Turn your head about 30–45° to one side — a straight-on 90° profile usually won't detect a face at all, since the model needs both eyes at least partly visible.</div>
+    <div class="scan-frame" id="frameSide">
+      <input type="file" accept="image/*" id="fileSide">
+      <div class="drop-msg" id="dropSide"><div class="ring">◎</div>Tap to upload a turned side photo</div>
+      <img class="photo" id="photoSide" alt="">
+      <div class="vignette"></div>
+      <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+      <div class="scan-grid" id="gridSide"></div>
+      <div class="scan-ring" id="ringSide"></div>
+      <div class="sweep" id="sweepSide"></div>
+      <canvas class="overlay" id="overlaySide"></canvas>
+      <div class="scan-caption" id="captionSide">Initializing…</div>
+    </div>
+    <button class="btn" id="scanSideBtn" disabled>Choose a photo</button>
+    <div class="status" id="statusSide"></div>
+    <button class="btn ghost" id="skipSideBtn">Skip this step</button>
+  </div>
+
+  <div class="panel" id="panelResults">
+    <div class="panel-title">Front measurements</div>
+    <div id="frontResults">
+      <div class="metric"><span class="label">Face shape</span><span class="value" id="mShape">–</span></div>
+      <div class="metric"><span class="label">Length / width ratio</span><span class="value" id="mRatio">–</span></div>
+      <div class="metric"><span class="label">Jaw corner angle</span><span class="value" id="mJaw">–</span></div>
+      <div class="metric"><span class="label">Facial thirds balance</span><span class="value" id="mThirds">–</span></div>
+      <div class="metric"><span class="label">Left/right symmetry gap</span><span class="value" id="mSym">–</span></div>
+    </div>
+    <div class="note">Approximate values, sensitive to angle, lighting, and head tilt — this is geometry, not a clinical or attractiveness measure.</div>
+
+    <div id="sideResultsWrap" style="display:none;">
+      <div class="panel-title" style="margin-top:22px;">Side profile measurements</div>
+      <div id="sideResults">
+        <div class="metric"><span class="label">Nasal bridge angle</span><span class="value" id="mNasal">–</span></div>
+        <div class="metric"><span class="label">Chin projection</span><span class="value" id="mChin">–</span></div>
+        <div class="metric"><span class="label">Jaw profile angle</span><span class="value" id="mJawProfile">–</span></div>
+      </div>
+      <div class="note">Profile geometry from a turned photo is inherently less precise than the front scan — treat these as a rough second reference, not a precise measurement.</div>
+    </div>
+
+    <div class="hair-header"><span class="tag" id="hairTag">MATCHED TO YOUR SHAPE</span></div>
+    <div id="hairList"></div>
+
+    <button class="btn" id="goExercisesBtn" style="margin-top:22px;">View 30-Day Exercise Plan →</button>
+    <button class="btn ghost" id="restartBtn">Start over</button>
+  </div>
+
+  <div class="panel" id="panelExercises">
+    <div class="panel-title">30-Day Facial Exercise Plan</div>
+    <div class="panel-hint">
+      General facial and neck muscle exercises, popularly known as "face yoga." These tone and engage muscle, they don't reshape bone — treat this as a wellness routine, not a medical or cosmetic treatment, and stop if anything hurts.
+    </div>
+
+    <div id="exerciseStreak" class="exercise-streak"></div>
+
+    <div id="dayGrid" class="day-grid"></div>
+
+    <div id="dayDetail" class="day-detail" style="display:none;">
+      <div class="day-detail-head">
+        <span id="dayDetailTitle"></span>
+        <span class="footer-link" id="dayDetailClose">Close</span>
+      </div>
+      <div id="dayDetailBody"></div>
+      <button class="btn" id="markCompleteBtn">Mark Day Complete</button>
+    </div>
+
+    <button class="btn ghost" id="backToResultsBtn" style="margin-top:18px;">← Back to results</button>
+  </div>
+
+  <footer>
+    face-api.js (68-point landmark model, MIT license) runs entirely in your browser.<br>
+    Not a diagnosis, medical assessment, or attractiveness rating.<br><br>
+    <span class="footer-link" id="termsLink">Terms of Use</span>
+    &nbsp;·&nbsp;
+    <span class="footer-link" id="privacyLink">Privacy Policy</span>
+  </footer>
+</div>
+
+<div class="auth-modal" id="legalModal">
+  <div class="auth-modal-card legal-card">
+    <div class="legal-scroll">
+      <h3 id="legalTitle">Terms of Use</h3>
+      <div class="legal-updated">Last updated: August 2026</div>
+      <div id="legalBody"></div>
+    </div>
+    <div class="auth-modal-actions">
+      <button class="btn" id="legalClose" style="flex:1;">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script>
+/* ============================================================
+   FACE SCAN — client-side only.
+   All detection/measurement happens in the browser via face-api.js.
+   No photo ever leaves the device.
+   ============================================================ */
+
+const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+
+const els = {
+  welcome: document.getElementById('welcome'),
+  paywall: document.getElementById('paywall'),
+  onboardGender: document.getElementById('onboardGender'),
+  onboardDOB: document.getElementById('onboardDOB'),
+  guestBtn: document.getElementById('guestBtn'),
+  authBadge: document.getElementById('authBadge'),
+  authAvatar: document.getElementById('authAvatar'),
+  authWho: document.getElementById('authWho'),
+  authSwitch: document.getElementById('authSwitch'),
+  stepPill1: document.getElementById('stepPill1'),
+  stepPill2: document.getElementById('stepPill2'),
+  stepPill3: document.getElementById('stepPill3'),
+  panelFront: document.getElementById('panelFront'),
+  panelSide: document.getElementById('panelSide'),
+  panelResults: document.getElementById('panelResults'),
+  fileFront: document.getElementById('fileFront'),
+  dropFront: document.getElementById('dropFront'),
+  photoFront: document.getElementById('photoFront'),
+  gridFront: document.getElementById('gridFront'),
+  ringFront: document.getElementById('ringFront'),
+  sweepFront: document.getElementById('sweepFront'),
+  overlayFront: document.getElementById('overlayFront'),
+  captionFront: document.getElementById('captionFront'),
+  scanFrontBtn: document.getElementById('scanFrontBtn'),
+  statusFront: document.getElementById('statusFront'),
+  fileSide: document.getElementById('fileSide'),
+  dropSide: document.getElementById('dropSide'),
+  photoSide: document.getElementById('photoSide'),
+  gridSide: document.getElementById('gridSide'),
+  ringSide: document.getElementById('ringSide'),
+  sweepSide: document.getElementById('sweepSide'),
+  overlaySide: document.getElementById('overlaySide'),
+  captionSide: document.getElementById('captionSide'),
+  scanSideBtn: document.getElementById('scanSideBtn'),
+  statusSide: document.getElementById('statusSide'),
+  skipSideBtn: document.getElementById('skipSideBtn'),
+  sideResultsWrap: document.getElementById('sideResultsWrap'),
+  mNasal: document.getElementById('mNasal'),
+  mChin: document.getElementById('mChin'),
+  mJawProfile: document.getElementById('mJawProfile'),
+  mShape: document.getElementById('mShape'),
+  mRatio: document.getElementById('mRatio'),
+  mJaw: document.getElementById('mJaw'),
+  mThirds: document.getElementById('mThirds'),
+  mSym: document.getElementById('mSym'),
+  frontResults: document.getElementById('frontResults'),
+  hairTag: document.getElementById('hairTag'),
+  hairList: document.getElementById('hairList'),
+  restartBtn: document.getElementById('restartBtn'),
+  stepPill4: document.getElementById('stepPill4'),
+  panelExercises: document.getElementById('panelExercises'),
+  goExercisesBtn: document.getElementById('goExercisesBtn'),
+  backToResultsBtn: document.getElementById('backToResultsBtn'),
+  exerciseStreak: document.getElementById('exerciseStreak'),
+  dayGrid: document.getElementById('dayGrid'),
+  dayDetail: document.getElementById('dayDetail'),
+  dayDetailTitle: document.getElementById('dayDetailTitle'),
+  dayDetailBody: document.getElementById('dayDetailBody'),
+  dayDetailClose: document.getElementById('dayDetailClose'),
+  markCompleteBtn: document.getElementById('markCompleteBtn'),
+};
+
+let modelsReady = false;
+let selectedFile = null;
+let selectedSideFile = null;
+let sideMetrics = null;
+let currentUser = null; // { name, email, provider, picture }
+
+/* ---------- Auth: real Google Sign-In + Guest ----------
+   This is a static file with no backend. Sign-in uses Google Identity
+   Services' official rendered button (real account picker, no demo, no
+   fallback fake login). "Continue as Guest" just skips sign-in — it is
+   not a substitute Google login of any kind.
+------------------------------------------------------------------------- */
+window.__completeGoogleSignIn = function(user){ completeSignIn(user); };
+
+function tryLoadGoogleButton(){
+  const ok = window.__renderGoogleBtn && window.__renderGoogleBtn();
+  document.getElementById('googleBtnError').style.display = ok ? 'none' : 'block';
+  return ok;
+}
+tryLoadGoogleButton();
+window.addEventListener('load', () => {
+  if (document.getElementById('googleBtnReal').childElementCount === 0) tryLoadGoogleButton();
+});
+document.getElementById('googleBtnRetry').addEventListener('click', tryLoadGoogleButton);
+
+els.guestBtn.addEventListener('click', () => {
+  completeSignIn({ name: 'Guest', provider: 'guest' });
+});
+
+function completeSignIn(user){
+  currentUser = user;
+  saveUserToStorage(user);
+  renderAuthBadge();
+  els.welcome.classList.add('hidden');
+  runOnboardingThenApp();
+}
+
+/* ---------- Onboarding: gender + date of birth ----------
+   Asked once per device, right after sign-in. Stored only in this
+   browser's local storage — never sent to a server, never tied to the
+   Google account itself.
+------------------------------------------------------------------------- */
+const ONBOARD_KEY = 'faceScanOnboarding';
+let selectedGender = null;
+
+function getOnboardingData(){
+  try{ return JSON.parse(localStorage.getItem(ONBOARD_KEY) || 'null'); }
+  catch(e){ return null; }
+}
+function saveOnboardingData(data){
+  try{ localStorage.setItem(ONBOARD_KEY, JSON.stringify(data)); }
+  catch(e){ console.warn('Could not save onboarding data', e); }
+}
+
+function runOnboardingThenApp(){
+  if (getOnboardingData()){
+    showPaywallOrApp();
+    return;
+  }
+  selectedGender = null;
+  document.querySelectorAll('.gender-card').forEach((c) => c.classList.remove('selected'));
+  els.onboardGender.style.display = 'block';
+}
+
+function populateDOBSelects(){
+  const dayEl = document.getElementById('dobDay');
+  const monthEl = document.getElementById('dobMonth');
+  const yearEl = document.getElementById('dobYear');
+  if (dayEl.options.length) return; // already populated
+
+  dayEl.innerHTML = '<option value="">Day</option>' +
+    Array.from({length:31}, (_, i) => `<option value="${i+1}">${i+1}</option>`).join('');
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  monthEl.innerHTML = '<option value="">Month</option>' +
+    months.map((m, i) => `<option value="${i+1}">${m}</option>`).join('');
+
+  const thisYear = new Date().getFullYear();
+  let yearOptions = '<option value="">Year</option>';
+  for (let y = thisYear; y >= thisYear - 100; y--){
+    yearOptions += `<option value="${y}">${y}</option>`;
+  }
+  yearEl.innerHTML = yearOptions;
+}
+
+document.querySelectorAll('.gender-card').forEach((card) => {
+  card.addEventListener('click', () => {
+    selectedGender = card.dataset.gender;
+    document.querySelectorAll('.gender-card').forEach((c) => c.classList.remove('selected'));
+    card.classList.add('selected');
+    setTimeout(() => {
+      els.onboardGender.style.display = 'none';
+      populateDOBSelects();
+      els.onboardDOB.style.display = 'block';
+    }, 220);
+  });
+});
+
+function checkDOBComplete(){
+  const d = document.getElementById('dobDay').value;
+  const m = document.getElementById('dobMonth').value;
+  const y = document.getElementById('dobYear').value;
+  document.getElementById('dobContinueBtn').disabled = !(d && m && y);
+}
+['dobDay','dobMonth','dobYear'].forEach((id) => {
+  document.getElementById(id).addEventListener('change', checkDOBComplete);
+});
+
+document.getElementById('dobContinueBtn').addEventListener('click', () => {
+  const day = document.getElementById('dobDay').value;
+  const month = document.getElementById('dobMonth').value;
+  const year = document.getElementById('dobYear').value;
+  saveOnboardingData({ gender: selectedGender, dob: { day, month, year } });
+  els.onboardDOB.style.display = 'none';
+  showPaywallOrApp();
+});
+
+/* ---------- Persistence: keep a Google sign-in across page reloads ----------
+   Guest sessions are intentionally NOT persisted — "Continue as Guest" starts
+   fresh every time. A real Google session is remembered in this browser via
+   localStorage until the person taps "switch".
+------------------------------------------------------------------------- */
+const AUTH_STORAGE_KEY = 'faceScanAuthUser';
+
+function saveUserToStorage(user){
+  try{
+    if (user.provider === 'google'){
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(user));
+    }
+  }catch(e){ console.warn('Could not persist sign-in', e); }
+}
+
+function loadUserFromStorage(){
+  try{
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+
+function clearStoredUser(){
+  try{ localStorage.removeItem(AUTH_STORAGE_KEY); }catch(e){}
+}
+
+// Auto-resume a remembered Google sign-in on page load, skipping the welcome screen.
+(function resumeSession(){
+  const saved = loadUserFromStorage();
+  if (saved){
+    currentUser = saved;
+    renderAuthBadge();
+    els.welcome.classList.add('hidden');
+    runOnboardingThenApp();
+  }
+})();
+
+function renderAuthBadge(){
+  if (!currentUser){
+    els.authBadge.style.display = 'none';
+    return;
+  }
+  els.authWho.textContent = currentUser.provider === 'guest' ? 'Guest' : currentUser.name;
+  if (currentUser.picture){
+    els.authAvatar.classList.remove('fallback');
+    els.authAvatar.outerHTML = `<img class="avatar" id="authAvatar" src="${currentUser.picture}" alt="">`;
+    els.authAvatar = document.getElementById('authAvatar');
+  } else {
+    const initial = (currentUser.provider === 'guest' ? 'G' : (currentUser.name || 'U')).trim().charAt(0).toUpperCase();
+    els.authAvatar.textContent = initial;
+  }
+  els.authBadge.style.display = 'flex';
+}
+
+/* ================================================================
+   SUBSCRIPTION / PAYWALL — real Google Play Billing via the
+   Digital Goods API. This ONLY works when the app is running as an
+   installed TWA from Google Play — it does nothing in a normal
+   browser tab, which is expected, not a bug.
+   Product IDs below MUST exactly match the subscription products
+   you create in Play Console → Monetize → Subscriptions.
+================================================================ */
+const SUBSCRIPTION_STORAGE_KEY = 'faceScanEntitled';
+// Launch flag: the app is free for everyone while this is false. Flip to
+// true later (once the subscription products are set up in Play Console)
+// to turn the paywall back on — nothing else needs to change.
+const SUBSCRIPTIONS_ENABLED = false;
+const PLAN_IDS = {
+  weekly: 'face_scan_weekly',
+  annual: 'face_scan_annual',
+};
+let selectedPlan = 'annual';
+let digitalGoodsService = null;
+
+async function getDigitalGoods(){
+  if (digitalGoodsService) return digitalGoodsService;
+  if (!('getDigitalGoodsService' in window)) return null;
+  try{
+    digitalGoodsService = await window.getDigitalGoodsService('https://play.google.com/billing');
+    return digitalGoodsService;
+  }catch(e){
+    console.warn('Digital Goods API unavailable (not running as an installed Play Store app)', e);
+    return null;
+  }
+}
+
+async function checkEntitlement(service){
+  if (!service) return false;
+  try{
+    const purchases = await service.listPurchases();
+    const active = purchases.some((p) => !p.canceled);
+    if (active) localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, '1');
+    return active;
+  }catch(e){
+    console.warn('Could not check purchases', e);
+    return false;
+  }
+}
+
+async function showPaywallOrApp(){
+  if (!SUBSCRIPTIONS_ENABLED){
+    els.paywall.style.display = 'none';
+    return;
+  }
+  const service = await getDigitalGoods();
+  const entitled = await checkEntitlement(service);
+
+  if (entitled){
+    els.paywall.style.display = 'none';
+    return;
+  }
+
+  if (!service){
+    // Not running inside the Play Store app (e.g. a normal browser tab) —
+    // there is no real billing to do here, so let the person straight
+    // into the app rather than showing a paywall that can't function.
+    els.paywall.style.display = 'none';
+    return;
+  }
+
+  els.paywall.style.display = 'block';
+  loadPlans(service);
+}
+
+async function loadPlans(service){
+  const loadingEl = document.getElementById('planLoading');
+  const cardsEl = document.getElementById('planCards');
+  const continueBtn = document.getElementById('paywallContinueBtn');
+  const errorEl = document.getElementById('paywallError');
+  try{
+    const details = await service.getDetails([PLAN_IDS.weekly, PLAN_IDS.annual]);
+    if (!details || details.length === 0) throw new Error('No subscription products returned');
+
+    cardsEl.innerHTML = '';
+    details.forEach((item) => {
+      const isAnnual = item.itemId === PLAN_IDS.annual;
+      const price = item.price ? `${item.price.currency} ${item.price.value}` : '';
+      const period = isAnnual ? '/year' : '/week';
+      const trial = item.freeTrialPeriod ? '7-day free trial, then ' : '';
+      const card = document.createElement('div');
+      card.className = 'plan-card' + (selectedPlan === (isAnnual ? 'annual' : 'weekly') ? ' selected' : '');
+      card.dataset.plan = isAnnual ? 'annual' : 'weekly';
+      card.innerHTML = `
+        ${isAnnual ? '<span class="badge">BEST VALUE</span>' : ''}
+        <div class="plan-name">${isAnnual ? 'Annual' : 'Weekly'}</div>
+        <div class="plan-price">${price}<span>${period}</span></div>
+        <div class="plan-sub">${trial}auto-renews, cancel anytime</div>
+      `;
+      card.addEventListener('click', () => {
+        selectedPlan = card.dataset.plan;
+        document.querySelectorAll('.plan-card').forEach((c) => c.classList.remove('selected'));
+        card.classList.add('selected');
+      });
+      cardsEl.appendChild(card);
+    });
+    continueBtn.style.display = 'block';
+  }catch(e){
+    console.error(e);
+    loadingEl.style.display = 'none';
+    errorEl.style.display = 'block';
+    errorEl.textContent = "Couldn't load subscription plans — check your connection, or the subscription products may not be set up yet in Play Console.";
+  }
+}
+
+document.getElementById('paywallContinueBtn').addEventListener('click', async () => {
+  const errorEl = document.getElementById('paywallError');
+  errorEl.style.display = 'none';
+  try{
+    const paymentMethod = 'https://play.google.com/billing';
+    const request = new PaymentRequest(
+      [{ supportedMethods: paymentMethod, data: { sku: PLAN_IDS[selectedPlan] } }],
+      { total: { label: 'Total', amount: { currency: 'USD', value: '0' } } }
+    );
+    const response = await request.show();
+    await response.complete('success');
+    localStorage.setItem(SUBSCRIPTION_STORAGE_KEY, '1');
+    els.paywall.style.display = 'none';
+  }catch(e){
+    console.error('Purchase failed', e);
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Purchase was not completed. You can try again anytime.';
+  }
+});
+
+document.getElementById('paywallRestoreBtn').addEventListener('click', async () => {
+  const service = await getDigitalGoods();
+  const entitled = await checkEntitlement(service);
+  const errorEl = document.getElementById('paywallError');
+  if (entitled){
+    els.paywall.style.display = 'none';
+  } else {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'No active subscription found on this Google account.';
+  }
+});
+
+document.getElementById('paywallTerms').addEventListener('click', () => openLegal('terms'));
+document.getElementById('paywallPrivacy').addEventListener('click', () => openLegal('privacy'));
+
+els.authSwitch.addEventListener('click', () => {
+  currentUser = null;
+  clearStoredUser();
+  renderAuthBadge();
+  els.welcome.classList.remove('hidden');
+});
+
+/* ---------- Load models ---------- */
+async function loadModels(){
+  try{
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+    ]);
+    modelsReady = true;
+    els.statusFront.textContent = '';
+    if (selectedFile) els.scanFrontBtn.disabled = false;
+    if (selectedSideFile) els.scanSideBtn.disabled = false;
+  }catch(err){
+    console.error(err);
+    els.statusFront.textContent = 'Could not load the measurement model — check your connection and reload.';
+  }
+}
+loadModels();
+
+/* ---------- Photo selection ---------- */
+els.fileFront.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  selectedFile = file;
+  const url = URL.createObjectURL(file);
+  els.photoFront.src = url;
+  els.photoFront.style.display = 'block';
+  els.dropFront.style.display = 'none';
+  els.scanFrontBtn.textContent = 'Run scan';
+  els.scanFrontBtn.disabled = !modelsReady;
+  els.statusFront.textContent = modelsReady ? '' : 'Loading measurement model…';
+  // reset any previous overlay
+  const ctx = els.overlayFront.getContext('2d');
+  ctx.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
+  els.overlayFront.style.display = 'none';
+});
+
+/* ---------- Run scan ---------- */
+els.scanFrontBtn.addEventListener('click', runScan);
+
+async function runScan(){
+  if (!selectedFile || !modelsReady) return;
+  els.scanFrontBtn.disabled = true;
+  els.fileFront.style.pointerEvents = 'none';
+  els.gridFront.style.display = 'block';
+  els.ringFront.style.display = 'block';
+  els.sweepFront.style.display = 'block';
+  els.captionFront.style.display = 'block';
+  els.captionFront.textContent = 'Detecting landmarks…';
+  els.statusFront.textContent = '';
+
+  try{
+    // give the browser a frame to paint the scanning animation before the (blocking-ish) inference
+    await new Promise(r => setTimeout(r, 60));
+
+    const detection = await faceapi
+      .detectSingleFace(els.photoFront, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.4 }))
+      .withFaceLandmarks();
+
+    if (!detection){
+      throw new Error('NO_FACE');
+    }
+
+    els.captionFront.textContent = 'Face found — measuring…';
+    await new Promise(r => setTimeout(r, 500));
+
+    drawLandmarks(detection);
+    const metrics = computeMetrics(detection.landmarks, detection.detection.box);
+
+    els.captionFront.textContent = 'Scan complete.';
+    await new Promise(r => setTimeout(r, 350));
+
+    showResults(metrics);
+
+  }catch(err){
+    console.error(err);
+    els.gridFront.style.display = 'none';
+    els.ringFront.style.display = 'none';
+    els.sweepFront.style.display = 'none';
+    els.captionFront.style.display = 'none';
+    els.fileFront.style.pointerEvents = 'auto';
+    els.scanFrontBtn.disabled = false;
+    if (err && err.message === 'NO_FACE'){
+      els.statusFront.textContent = 'No face detected — try a clearer, front-facing, well-lit photo.';
+    } else {
+      els.statusFront.textContent = 'Something went wrong during the scan. Please try again.';
+    }
+  }
+}
+
+/* ---------- Draw landmark overlay ---------- */
+function drawLandmarks(detection){
+  const img = els.photoFront;
+  const canvas = els.overlayFront;
+  const rect = img.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+
+  const displaySize = { width: rect.width, height: rect.height };
+  faceapi.matchDimensions(canvas, displaySize);
+  const resized = faceapi.resizeResults(detection, displaySize);
+
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#5EEAD4';
+  ctx.strokeStyle = 'rgba(94,234,212,0.5)';
+  resized.landmarks.positions.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  canvas.style.display = 'block';
+}
+
+/* ---------- Geometry helpers ---------- */
+function dist(a, b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function midpoint(a, b){ return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+function angleAt(vertex, p1, p2){
+  const v1 = { x: p1.x - vertex.x, y: p1.y - vertex.y };
+  const v2 = { x: p2.x - vertex.x, y: p2.y - vertex.y };
+  const dot = v1.x * v2.x + v1.y * v2.y;
+  const mag = Math.hypot(v1.x, v1.y) * Math.hypot(v2.x, v2.y);
+  if (mag === 0) return 0;
+  const cos = Math.min(1, Math.max(-1, dot / mag));
+  return Math.acos(cos) * (180 / Math.PI);
+}
+
+/* ---------- Compute metrics from 68-point landmarks ----------
+   Landmark index reference (face-api.js / dlib 68-point model):
+   0-16   jawline (0 = right ear side, 16 = left ear side, 8 = chin)
+   17-21  right eyebrow, 22-26 left eyebrow
+   27-35  nose bridge/base (27 = nasion, 33 = nose base/tip)
+   36-41  right eye, 42-47 left eye
+   48-67  mouth
+   There is no hairline point in this model, so overall face length
+   is estimated from the brow line to the chin, scaled by a fixed
+   factor to approximate the forehead — a common approximation used
+   in landmark-only face-shape tools.
+--------------------------------------------------------------- */
+function computeMetrics(landmarks, box){
+  const p = landmarks.positions;
+
+  const jaw = p.slice(0, 17);
+  const chin = jaw[8];
+
+  const browCenter = midpoint(p[21], p[22]);
+  const noseBase = p[33];
+  const nasion = p[27];
+  const leftEyeCenter = midpoint(p[36], p[39]);
+  const rightEyeCenter = midpoint(p[42], p[45]);
+
+  // --- Head tilt (roll) from the eye line — large tilt lowers measurement quality ---
+  const eyeDx = rightEyeCenter.x - leftEyeCenter.x;
+  const eyeDy = rightEyeCenter.y - leftEyeCenter.y;
+  const tiltDeg = Math.abs(Math.atan2(eyeDy, eyeDx) * (180 / Math.PI));
+
+  // --- Width & length ---
+  const cheekboneWidth = dist(jaw[1], jaw[15]);   // widest reliable jaw-arc points
+  const jawWidth = dist(jaw[4], jaw[12]);          // narrower, lower jaw corners
+  const foreheadWidthProxy = dist(p[17], p[26]);   // outer eyebrow points, proxy only
+
+  // Face length: prefer the actual detector bounding box top (real detected
+  // extent, usually reaching close to the hairline) over a fixed multiplier —
+  // falls back to the brow-to-chin estimate if the box looks unreasonable.
+  const browToChin = dist(browCenter, chin);
+  const boxTopLength = box ? (chin.y - box.top) : 0;
+  const estimatedFaceLength = (boxTopLength > browToChin * 1.05 && boxTopLength < browToChin * 1.8)
+    ? boxTopLength
+    : browToChin * 1.35;
+
+  const lengthWidthRatio = estimatedFaceLength / cheekboneWidth;
+
+  // --- Jaw corner angle (averaged both sides) ---
+  const rightJawAngle = angleAt(jaw[4], jaw[1], chin);
+  const leftJawAngle = angleAt(jaw[12], jaw[15], chin);
+  const jawAngleDeg = (rightJawAngle + leftJawAngle) / 2;
+
+  // --- Facial thirds (brow→nose-base vs nose-base→chin) ---
+  const upperThird = dist(browCenter, noseBase);
+  const lowerThird = dist(noseBase, chin);
+  const thirdsRatio = upperThird / lowerThird; // ~1.0 = balanced
+
+  // --- Symmetry: compare left/right offsets from the vertical midline,
+  //     using the eye line midpoint (more stable than nose-only) as center ---
+  const midlineX = midpoint(leftEyeCenter, rightEyeCenter).x;
+  const pairs = [[jaw[2], jaw[14]], [jaw[4], jaw[12]], [jaw[6], jaw[10]]];
+  let symDiffSum = 0;
+  pairs.forEach(([r, l]) => {
+    const rDist = Math.abs(r.x - midlineX);
+    const lDist = Math.abs(l.x - midlineX);
+    symDiffSum += Math.abs(rDist - lDist);
+  });
+  const avgSymDiff = symDiffSum / pairs.length;
+  const symmetryGapPct = (avgSymDiff / cheekboneWidth) * 100;
+
+  // --- Shape classification (heuristic, geometry only) ---
+  const jawToFace = jawWidth / cheekboneWidth;
+  const foreheadToFace = foreheadWidthProxy / cheekboneWidth;
+  const shape = classifyShape(lengthWidthRatio, jawToFace, foreheadToFace, jawAngleDeg);
+
+  return {
+    shape,
+    ratio: lengthWidthRatio,
+    jawAngleDeg,
+    thirdsRatio,
+    symmetryGapPct,
+    tiltDeg,
+  };
+}
+
+function classifyShape(ratio, jawToFace, foreheadToFace, jawAngleDeg){
+  // Distance-based classifier: every shape is scored against reference
+  // proportions and the closest match wins. Each feature is normalized by
+  // its typical real-world spread before comparing — without this, features
+  // with naturally small variation across real faces (jaw/forehead ratios)
+  // get drowned out or, if over-weighted, dominate so hard that almost
+  // every face collapses onto whichever prototype sits at the population
+  // average (Oval). Normalizing first makes each feature contribute
+  // roughly its actual discriminative power.
+  const prototypes = {
+    Oval:     { ratio: 1.50, jaw: 0.80, forehead: 0.94, angle: 140 },
+    Round:    { ratio: 1.02, jaw: 0.90, forehead: 0.92, angle: 162 },
+    Square:   { ratio: 1.05, jaw: 0.97, forehead: 0.97, angle: 114 },
+    Heart:    { ratio: 1.32, jaw: 0.68, forehead: 1.02, angle: 136 },
+    Diamond:  { ratio: 1.28, jaw: 0.74, forehead: 0.80, angle: 128 },
+    Oblong:   { ratio: 1.72, jaw: 0.82, forehead: 0.86, angle: 144 },
+    Triangle: { ratio: 1.15, jaw: 1.02, forehead: 0.76, angle: 128 },
+  };
+  // Typical spread of each feature across real faces — used to normalize.
+  const SPREAD = { ratio: 0.16, jaw: 0.09, forehead: 0.08, angle: 13 };
+  let best = 'Oval', bestDist = Infinity;
+  for (const name in prototypes){
+    const p = prototypes[name];
+    const dRatio = (ratio - p.ratio) / SPREAD.ratio;
+    const dJaw = (jawToFace - p.jaw) / SPREAD.jaw;
+    const dForehead = (foreheadToFace - p.forehead) / SPREAD.forehead;
+    const dAngle = (jawAngleDeg - p.angle) / SPREAD.angle;
+    const d = dRatio*dRatio + dJaw*dJaw + dForehead*dForehead + dAngle*dAngle;
+    if (d < bestDist){ bestDist = d; best = name; }
+  }
+  return best;
+}
+
+/* ---------- Hairstyle suggestions by shape ---------- */
+const HAIR_GUIDE = {
+  Oval: [
+    { h: 'Textured crop', p: 'Balanced proportions mean most lengths work — a textured crop keeps it low-maintenance while showing off the jaw.' },
+    { h: 'Side-swept fringe', p: 'Softens the forehead without covering the natural symmetry oval faces already have.' },
+    { h: 'Medium slick back', p: 'Keeps the length of the face visible while adding volume at the crown.' },
+  ],
+  Round: [
+    { h: 'Angular fringe', p: 'Sharp, off-center fringe lines add definition and break up the roundness at the cheeks.' },
+    { h: 'High-volume quiff', p: 'Height on top visually elongates the face, balancing the wider cheek and jaw width.' },
+    { h: 'Faded sides, longer top', p: 'Tight sides and length on top draw the eye upward and away from width.' },
+  ],
+  Square: [
+    { h: 'Textured crop with fringe', p: 'Softens the strong jaw corner angle while keeping the cut sharp on top.' },
+    { h: 'Side part with taper', p: 'A defined part breaks the symmetry of a square jaw in a flattering way.' },
+    { h: 'Longer curls or waves', p: 'Movement and texture soften the angular jawline you measured.' },
+  ],
+  Heart: [
+    { h: 'Textured fringe', p: 'Balances a wider forehead against a narrower jaw by adding volume lower on the face.' },
+    { h: 'Side-swept undercut', p: 'Draws attention away from the forehead width and toward the jawline.' },
+    { h: 'Medium length with movement', p: 'Chin-adjacent length adds visual width at the jaw to match the brow width.' },
+  ],
+  Triangle: [
+    { h: 'Volume on top, tapered sides', p: 'Adds width up top to balance a jaw that measured wider than the forehead.' },
+    { h: 'Textured fringe', p: 'Draws the eye upward, away from jaw width, without adding bulk at the sides.' },
+    { h: 'Side part with soft layers', p: 'Layers around the temples soften the transition from a narrower forehead to a fuller jaw.' },
+  ],
+  Diamond: [
+    { h: 'Fringe with volume at the crown', p: 'Adds width at the forehead and jaw to balance pronounced cheek width.' },
+    { h: 'Textured medium crop', p: 'Softens sharp cheek angles without adding bulk at the sides.' },
+    { h: 'Side part with light taper', p: 'Keeps the sides close so the cheek width you measured doesn\u2019t look wider than it is.' },
+  ],
+  Oblong: [
+    { h: 'Fringe, blunt or textured', p: 'Cuts visual length by breaking up the forehead-to-chin distance you measured.' },
+    { h: 'Flat top with tapered sides', p: 'Adds width at the sides rather than height, balancing the longer ratio.' },
+    { h: 'Medium length, no added height', p: 'Avoids extra volume on top so the face doesn\u2019t read even longer.' },
+  ],
+};
+
+/* ---------- 30-Day Facial Exercise Plan ----------
+   General face/neck muscle toning exercises (the "face yoga" category).
+   These engage and fatigue muscle, the same way any bodyweight exercise
+   does — they do not reshape bone or cartilage, and nothing here is
+   medical advice. Content is real and specific, not filler. */
+const EXERCISE_LIBRARY = {
+  jawRelease: { h: 'Jaw Release', p: 'Slowly open your mouth as wide as is comfortable, hold, then close slowly. Keeps the jaw joint moving through its full range.', reps: '10 slow reps' },
+  cheekPuff: { h: 'Cheek Puff & Hold', p: 'Fill both cheeks with air like a balloon, hold, then push the air side to side a few times before releasing.', reps: '3 rounds, 10s hold' },
+  fishFace: { h: 'Fish Face', p: 'Suck your cheeks and lips inward to make a "fish face," hold, then try to smile while holding the position.', reps: '10 reps, 5s hold' },
+  chinLift: { h: 'Chin Lift', p: 'Tilt your head back to face the ceiling, then pucker your lips as if kissing the sky. Engages the front of the neck and under-chin area.', reps: '10 reps, 5s hold' },
+  jawlineTightener: { h: 'Jawline Tightener', p: 'Tilt your head back slightly and move your lower jaw as if chewing, keeping lips closed.', reps: '15 reps' },
+  tonguePress: { h: 'Tongue Press', p: 'Press your tongue flat against the roof of your mouth and hold while keeping your jaw relaxed.', reps: '5 reps, 10s hold' },
+  smileResistance: { h: 'Smile Resistance', p: 'Smile as wide as you can while pressing two fingers gently into your cheeks to resist the movement.', reps: '10 reps, 5s hold' },
+  neckCurl: { h: 'Neck Curl (seated)', p: 'Sitting upright, gently tuck your chin toward your chest, hold, then return to neutral. Keep it slow, never force it.', reps: '10 reps' },
+  browLift: { h: 'Eyebrow Lift', p: 'Place a finger lightly above each eyebrow, raise your eyebrows against the resistance, then relax.', reps: '10 reps' },
+  platysmaStretch: { h: 'Neck Platysma Stretch', p: 'Pull the corners of your mouth down gently while tensing your neck muscles, as if showing your neck tendons. Hold briefly.', reps: '8 reps, 5s hold' },
+  cheekLifter: { h: 'Cheek Lifter', p: 'Open your mouth into an "O," roll your lips over your teeth, and smile upward to lift the cheek muscles.', reps: '10 reps, 3s hold' },
+  jawCircle: { h: 'Jaw Circles', p: 'With your mouth relaxed and slightly open, gently move your jaw in slow circles, then reverse direction.', reps: '8 circles each way' },
+};
+
+// Each day lists 3 exercise keys — the rotation varies day to day so the
+// routine doesn't feel identical every session, similar to how a real
+// weekly workout split rotates muscle groups.
+const EXERCISE_KEYS = Object.keys(EXERCISE_LIBRARY);
+function dayExercises(dayNum){
+  // Deterministic rotation (not random) so the same day always shows the
+  // same plan, but the 3 picks shift by a few each day across the month.
+  const start = (dayNum * 3) % EXERCISE_KEYS.length;
+  const picks = [];
+  for (let i = 0; i < 3; i++){
+    picks.push(EXERCISE_KEYS[(start + i * 4) % EXERCISE_KEYS.length]);
+  }
+  return [...new Set(picks)].length === 3 ? picks : EXERCISE_KEYS.slice(0, 3);
+}
+
+const EXERCISE_PROGRESS_KEY = 'faceScanExerciseDays';
+function getCompletedDays(){
+  try{ return JSON.parse(localStorage.getItem(EXERCISE_PROGRESS_KEY) || '[]'); }
+  catch(e){ return []; }
+}
+function setCompletedDays(days){
+  try{ localStorage.setItem(EXERCISE_PROGRESS_KEY, JSON.stringify(days)); }
+  catch(e){ /* ignore */ }
+}
+
+let openDay = null;
+
+function renderDayGrid(){
+  const completed = getCompletedDays();
+  els.dayGrid.innerHTML = '';
+  for (let d = 1; d <= 30; d++){
+    const cell = document.createElement('div');
+    cell.className = 'day-cell' + (completed.includes(d) ? ' done' : '');
+    cell.textContent = completed.includes(d) ? '✓' : d;
+    cell.addEventListener('click', () => openDayDetail(d));
+    els.dayGrid.appendChild(cell);
+  }
+  const streakCount = completed.length;
+  els.exerciseStreak.textContent = streakCount === 0
+    ? 'No days completed yet — tap a day to start.'
+    : `${streakCount} of 30 days completed`;
+}
+
+function openDayDetail(dayNum){
+  openDay = dayNum;
+  const keys = dayExercises(dayNum);
+  els.dayDetailTitle.textContent = 'Day ' + dayNum;
+  els.dayDetailBody.innerHTML = keys.map((k) => {
+    const ex = EXERCISE_LIBRARY[k];
+    return `<div class="ex-item"><h4>${ex.h}</h4><p>${ex.p}</p><span class="reps">${ex.reps}</span></div>`;
+  }).join('');
+  const completed = getCompletedDays();
+  els.markCompleteBtn.textContent = completed.includes(dayNum) ? 'Marked Complete ✓' : 'Mark Day Complete';
+  els.markCompleteBtn.disabled = completed.includes(dayNum);
+  els.dayDetail.style.display = 'block';
+}
+
+els.dayDetailClose.addEventListener('click', () => {
+  els.dayDetail.style.display = 'none';
+  openDay = null;
+});
+
+els.markCompleteBtn.addEventListener('click', () => {
+  if (openDay === null) return;
+  const completed = getCompletedDays();
+  if (!completed.includes(openDay)){
+    completed.push(openDay);
+    setCompletedDays(completed);
+    renderDayGrid();
+    els.markCompleteBtn.textContent = 'Marked Complete ✓';
+    els.markCompleteBtn.disabled = true;
+  }
+});
+
+els.goExercisesBtn.addEventListener('click', () => {
+  els.panelResults.classList.remove('active');
+  els.panelExercises.classList.add('active');
+  els.stepPill3.classList.remove('active');
+  els.stepPill4.classList.add('active');
+  renderDayGrid();
+});
+
+els.backToResultsBtn.addEventListener('click', () => {
+  els.panelExercises.classList.remove('active');
+  els.panelResults.classList.add('active');
+  els.stepPill4.classList.remove('active');
+  els.stepPill3.classList.add('active');
+  els.dayDetail.style.display = 'none';
+  openDay = null;
+});
+
+/* ---------- Show results ---------- */
+function showResults(metrics){
+  // metrics
+  els.mShape.textContent = metrics.shape;
+  els.mRatio.textContent = metrics.ratio.toFixed(2) + ' : 1';
+  els.mJaw.textContent = Math.round(metrics.jawAngleDeg) + '°';
+
+  const thirdsPct = Math.round(metrics.thirdsRatio * 100);
+  els.mThirds.textContent = thirdsPct + '%';
+
+  els.mSym.textContent = metrics.symmetryGapPct.toFixed(1) + '%';
+
+  // tilt quality warning
+  let warnBox = document.getElementById('tiltWarn');
+  if (metrics.tiltDeg > 8){
+    if (!warnBox){
+      warnBox = document.createElement('div');
+      warnBox.id = 'tiltWarn';
+      warnBox.className = 'warn-box';
+      els.frontResults.insertAdjacentElement('afterend', warnBox);
+    }
+    warnBox.textContent = `Head was tilted about ${Math.round(metrics.tiltDeg)}° in this photo — that lowers measurement accuracy. For a more reliable read, rescan with your eyes level.`;
+    warnBox.style.display = 'block';
+  } else if (warnBox){
+    warnBox.style.display = 'none';
+  }
+
+  // side profile metrics, if the person didn't skip that step
+  if (sideMetrics){
+    els.mNasal.textContent = Math.round(sideMetrics.nasalAngleDeg) + '°';
+    els.mChin.textContent = sideMetrics.chinProjection.toFixed(2);
+    els.mJawProfile.textContent = Math.round(sideMetrics.jawProfileAngleDeg) + '°';
+    els.sideResultsWrap.style.display = 'block';
+  } else {
+    els.sideResultsWrap.style.display = 'none';
+  }
+
+  // hair list
+  const guide = HAIR_GUIDE[metrics.shape] || HAIR_GUIDE.Oval;
+  els.hairList.innerHTML = '';
+  guide.forEach((item, i) => {
+    const card = document.createElement('div');
+    card.className = 'hair-card';
+    card.style.animationDelay = (0.05 + i * 0.1) + 's';
+    card.innerHTML = `<h4>${item.h}</h4><p>${item.p}</p>`;
+    els.hairList.appendChild(card);
+  });
+  els.hairTag.textContent = 'MATCHED TO ' + metrics.shape.toUpperCase() + ' SHAPE';
+
+  // switch panels: Front -> Side (not Results yet)
+  els.panelFront.classList.remove('active');
+  els.panelSide.classList.add('active');
+  els.stepPill1.classList.remove('active');
+  els.stepPill1.classList.add('done');
+  els.stepPill2.classList.add('active');
+
+  // reset front scan chrome so it's ready if the user goes back
+  els.gridFront.style.display = 'none';
+  els.ringFront.style.display = 'none';
+  els.sweepFront.style.display = 'none';
+  els.captionFront.style.display = 'none';
+  els.fileFront.style.pointerEvents = 'auto';
+  els.scanFrontBtn.disabled = false;
+}
+
+function goToResults(){
+  els.panelSide.classList.remove('active');
+  els.panelResults.classList.add('active');
+  els.stepPill2.classList.remove('active');
+  els.stepPill2.classList.add('done');
+  els.stepPill3.classList.add('active');
+}
+
+/* ---------- Side profile: upload + scan ---------- */
+els.fileSide.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  selectedSideFile = file;
+  const url = URL.createObjectURL(file);
+  els.photoSide.src = url;
+  els.photoSide.style.display = 'block';
+  els.dropSide.style.display = 'none';
+  els.scanSideBtn.textContent = 'Run scan';
+  els.scanSideBtn.disabled = !modelsReady;
+  els.statusSide.textContent = modelsReady ? '' : 'Loading measurement model…';
+  const ctx = els.overlaySide.getContext('2d');
+  ctx.clearRect(0, 0, els.overlaySide.width, els.overlaySide.height);
+  els.overlaySide.style.display = 'none';
+});
+
+els.scanSideBtn.addEventListener('click', runSideScan);
+
+async function runSideScan(){
+  if (!selectedSideFile || !modelsReady) return;
+  els.scanSideBtn.disabled = true;
+  els.fileSide.style.pointerEvents = 'none';
+  els.gridSide.style.display = 'block';
+  els.ringSide.style.display = 'block';
+  els.sweepSide.style.display = 'block';
+  els.captionSide.style.display = 'block';
+  els.captionSide.textContent = 'Detecting landmarks…';
+  els.statusSide.textContent = '';
+
+  try{
+    await new Promise(r => setTimeout(r, 60));
+
+    const detection = await faceapi
+      .detectSingleFace(els.photoSide, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.35 }))
+      .withFaceLandmarks();
+
+    if (!detection){
+      throw new Error('NO_FACE');
+    }
+
+    els.captionSide.textContent = 'Face found — measuring…';
+    await new Promise(r => setTimeout(r, 500));
+
+    drawSideLandmarks(detection);
+    sideMetrics = computeSideMetrics(detection.landmarks);
+
+    els.captionSide.textContent = 'Scan complete.';
+    await new Promise(r => setTimeout(r, 350));
+
+    goToResults();
+
+  }catch(err){
+    console.error(err);
+    els.gridSide.style.display = 'none';
+    els.ringSide.style.display = 'none';
+    els.sweepSide.style.display = 'none';
+    els.captionSide.style.display = 'none';
+    els.fileSide.style.pointerEvents = 'auto';
+    els.scanSideBtn.disabled = false;
+    if (err && err.message === 'NO_FACE'){
+      els.statusSide.textContent = "No face detected — this usually means the turn is too extreme. Try a photo turned about 30–45°, or tap Skip below.";
+    } else {
+      els.statusSide.textContent = 'Something went wrong during the scan. Please try again, or tap Skip below.';
+    }
+  }
+}
+
+els.skipSideBtn.addEventListener('click', () => {
+  sideMetrics = null;
+  goToResults();
+});
+
+function drawSideLandmarks(detection){
+  const img = els.photoSide;
+  const canvas = els.overlaySide;
+  const rect = img.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  const displaySize = { width: rect.width, height: rect.height };
+  faceapi.matchDimensions(canvas, displaySize);
+  const resized = faceapi.resizeResults(detection, displaySize);
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#5EEAD4';
+  resized.landmarks.positions.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  canvas.style.display = 'block';
+}
+
+/* ---------- Side profile geometry ----------
+   With a turned (not full 90°) photo, the 68-point model still returns
+   frontal-style landmarks, so these are approximations built from real
+   detected points — not a dedicated profile model — and are presented
+   to the person as a rough second reference, not a precise measurement. */
+function computeSideMetrics(landmarks){
+  const pts = landmarks.positions;
+  const jaw = pts.slice(0, 17);
+  const noseBridgeTop = pts[27];
+  const noseTip = pts[33];
+  const chin = pts[8];
+  const browOuterL = pts[17];
+  const browOuterR = pts[26];
+
+  // Nasal bridge angle: deviation of the nose-bridge line from vertical.
+  const dx = noseTip.x - noseBridgeTop.x;
+  const dy = noseTip.y - noseBridgeTop.y;
+  const nasalAngleDeg = Math.abs(Math.atan2(dx, dy) * (180 / Math.PI));
+
+  // Chin projection: horizontal chin offset from the nose tip, normalized
+  // by face width, as a rough stand-in for chin prominence in profile.
+  const faceWidth = dist(browOuterL, browOuterR) || 1;
+  const chinProjection = Math.abs(chin.x - noseTip.x) / faceWidth;
+
+  // Jaw profile angle: angle at whichever jaw-corner point is furthest
+  // from the midline (the side actually visible in a turned photo).
+  const midX = (browOuterL.x + browOuterR.x) / 2;
+  const jawCornerCandidates = [jaw[3], jaw[13]];
+  const jawCorner = jawCornerCandidates.reduce((a, b) =>
+    Math.abs(a.x - midX) > Math.abs(b.x - midX) ? a : b
+  );
+  const jawEnd = jawCorner === jaw[3] ? jaw[0] : jaw[16];
+  const jawProfileAngleDeg = angleAt(jawCorner, jawEnd, chin);
+
+  return { nasalAngleDeg, chinProjection, jawProfileAngleDeg };
+}
+
+/* ---------- Restart ---------- */
+els.restartBtn.addEventListener('click', () => {
+  // reset front state
+  selectedFile = null;
+  els.fileFront.value = '';
+  els.photoFront.src = '';
+  els.photoFront.style.display = 'none';
+  els.dropFront.style.display = 'flex';
+  els.scanFrontBtn.textContent = 'Choose a photo';
+  els.scanFrontBtn.disabled = true;
+  els.statusFront.textContent = '';
+
+  const ctxF = els.overlayFront.getContext('2d');
+  ctxF.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
+  els.overlayFront.style.display = 'none';
+
+  // reset side state
+  selectedSideFile = null;
+  sideMetrics = null;
+  els.fileSide.value = '';
+  els.photoSide.src = '';
+  els.photoSide.style.display = 'none';
+  els.dropSide.style.display = 'flex';
+  els.scanSideBtn.textContent = 'Choose a photo';
+  els.scanSideBtn.disabled = true;
+  els.statusSide.textContent = '';
+
+  const ctxS = els.overlaySide.getContext('2d');
+  ctxS.clearRect(0, 0, els.overlaySide.width, els.overlaySide.height);
+  els.overlaySide.style.display = 'none';
+
+  // reset panels/stepper
+  const warnBox = document.getElementById('tiltWarn');
+  if (warnBox) warnBox.style.display = 'none';
+  els.panelResults.classList.remove('active');
+  els.panelSide.classList.remove('active');
+  els.panelFront.classList.add('active');
+  els.stepPill3.classList.remove('active');
+  els.stepPill2.classList.remove('active');
+  els.stepPill2.classList.remove('done');
+  els.stepPill1.classList.remove('done');
+  els.stepPill1.classList.add('active');
+});
+
+/* ---------- Terms of Use / Privacy Policy (shown in-app, not a page nav) ---------- */
+const LEGAL_TEXT = {
+  terms: `
+    <h4>What the app does</h4>
+    <p>Face Scan analyzes a photo you provide to estimate face shape, jaw angle, facial symmetry, and facial thirds, using an open-source facial landmark model that runs entirely on your device. It then suggests hairstyles based on those measurements.</p>
+    <h4>Not medical or professional advice</h4>
+    <p>Measurements are approximate and sensitive to photo angle, lighting, and head position. Nothing in the app is a medical diagnosis, a clinical assessment, or a rating of attractiveness.</p>
+    <h4>Your content</h4>
+    <p>Photos you upload are processed locally on your device and are not uploaded to any server by the app. You are responsible for only uploading photos you have the right to use.</p>
+    <h4>Account sign-in</h4>
+    <p>If you sign in with Google, authentication is handled directly by Google. The app never receives or stores your Google password.</p>
+    <h4>No warranty</h4>
+    <p>The app is provided "as is," without warranties of any kind. We do not guarantee the accuracy of any measurement or hairstyle suggestion.</p>
+    <h4>Limitation of liability</h4>
+    <p>To the fullest extent permitted by law, the app's developer is not liable for indirect, incidental, or consequential damages arising from your use of the app.</p>
+    <h4>Changes</h4>
+    <p>These terms may be updated from time to time. Continued use of the app after changes means you accept the updated terms.</p>
+  `,
+  privacy: `
+    <h4>Photos you upload</h4>
+    <p>When you upload a photo to scan, it is processed entirely on your own device using an on-device facial landmark model. The photo is never sent to, stored on, or seen by any server operated by the app. Restarting the scan clears it from memory.</p>
+    <h4>Google Sign-In</h4>
+    <p>If you choose "Sign in with Google," authentication is handled directly by Google's own sign-in system. The app receives only your name, email, and profile picture as authorized by you, and stores it only in your device's local browser storage — never on a server operated by the app.</p>
+    <h4>What is stored, and where</h4>
+    <p><b>Uploaded photo</b> — device memory only, cleared on restart, never sent anywhere.<br>
+    <b>Scan measurements</b> — shown once, not stored.<br>
+    <b>Google name/email/picture</b> — local device storage only.<br>
+    <b>30-day exercise progress</b> — stored only on this device's local storage. It is not synced to your account or any server, so it will not carry over if you switch devices, reinstall the app, or clear your browser/app data.<br>
+    <b>Gender and date of birth</b> — asked once during setup to personalize hairstyle suggestions, stored only on this device's local storage, never sent to a server or linked to your Google account.</p>
+    <h4>Third parties</h4>
+    <p>The app loads two third-party scripts from their official sources: face-api.js (an open-source facial landmark library) and Google Identity Services (for sign-in). These providers may see standard technical request data as an ordinary function of loading a script, governed by their own privacy policies.</p>
+    <h4>No advertising or tracking</h4>
+    <p>The app does not use advertising networks, analytics trackers, or third-party cookies, and does not sell or share personal data with anyone.</p>
+    <h4>Your choices</h4>
+    <p>You can use the app without signing in via "Continue as Guest." You can clear your stored sign-in at any time using "switch" in the app, or by clearing your browser's site data.</p>
+    <h4>Children</h4>
+    <p>The app is not directed at children and does not knowingly collect information from children.</p>
+  `,
+};
+
+function openLegal(kind){
+  document.getElementById('legalTitle').textContent = kind === 'terms' ? 'Terms of Use' : 'Privacy Policy';
+  document.getElementById('legalBody').innerHTML = LEGAL_TEXT[kind];
+  document.getElementById('legalModal').classList.add('active');
+}
+document.getElementById('termsLink').addEventListener('click', () => openLegal('terms'));
+document.getElementById('privacyLink').addEventListener('click', () => openLegal('privacy'));
+document.getElementById('legalClose').addEventListener('click', () => {
+  document.getElementById('legalModal').classList.remove('active');
+});
+
+if ('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('SW registration failed', e));
+  });
+}
+</script>
+</body>
+</html>
