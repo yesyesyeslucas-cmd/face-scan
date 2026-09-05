@@ -1,8 +1,10 @@
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "io.github.yesyesyeslucas_cmd.twa",
-    "sha256_cert_fingerprints": ["A0:40:8B:71:7C:3B:F2:06:FC:D6:34:D0:E3:DF:2C:87:95:61:D6:CE:6D:79:06:AC:A9:F9:3A:24:F8:6B:86:82"]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.yesyesyeslucas_cmd.twa",
+      "sha256_cert_fingerprints": ["B9:C1:7C:6C:EA:AF:90:6E:61:AE:75:85:60:A7:91:62:0E:5F:87:3D:8C:B8:03:B9:55:7F:F4:B4:9E:49:93:7A"]
+    }
   }
-}]
+]
