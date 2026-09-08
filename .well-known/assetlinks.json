@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.yesyesyeslucas_cmd.twa",
+      "sha256_cert_fingerprints": [
+        "AC:94:A8:9C:54:3B:4E:66:FC:FA:F6:40:83:25:CC:07:D6:77:8C:11:FD:E2:99:B0:11:70:FA:A7:E7:56:89:3F"
+      ]
+    }
+  }
+]
