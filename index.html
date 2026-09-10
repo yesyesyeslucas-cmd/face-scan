@@ -1071,10 +1071,15 @@ const TRIAL_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
 // Monetize → Subscriptions, or the plan list will fail to load (handled
 // gracefully with an error message).
 // Calibration readout: shows the four raw numbers the shape classifier
-// actually receives, right under the shape name. Used to set the
-// classifier's thresholds against real measurements instead of guesses.
-// SET THIS TO false BEFORE PUBLISHING — it is a diagnostic, not a feature.
-const SHOW_CALIBRATION = false;
+// actually receives, right under the shape name. Off for everyone by
+// default; append ?calib=1 to the URL to switch it on for a session. It's
+// there because the classifier's cutoffs can only be set correctly against
+// the range these measurements really produce — guessing at that range is
+// what put every face in one bucket twice over.
+const SHOW_CALIBRATION = (() => {
+  try{ return new URLSearchParams(location.search).get('calib') === '1'; }
+  catch(e){ return false; }
+})();
 
 const SUBSCRIPTIONS_ENABLED = true;
 const PLAN_IDS = {
@@ -1756,9 +1761,19 @@ function classifyShape(ratio, jawToFace, foreheadToFace, jawAngleDeg){
   if (widestOfTwo < 0.78 && Math.abs(taper) <= 0.10) return 'Diamond';
 
   // --- Common shapes: length first, then the jaw's own character ---
-  if (ratio > 1.52) return 'Oblong';   // clearly longer than wide
-  if (ratio > 1.30) return 'Oval';     // moderately long, softly tapered
-  return jawAngleDeg > 137 ? 'Round' : 'Square';
+  // These cutoffs sit on the scale this code actually measures on, which is
+  // NOT the textbook one: length runs from the top of the face oval (mesh 10)
+  // to the chin, while width runs between the outermost oval points (234/454)
+  // out at ear level — a wider denominator than the cheekbone width the
+  // classic figures assume, so the same face reads lower here. Real readings
+  // have come in around 1.05-1.30. The previous cutoffs (1.30 / 1.52) were
+  // carried over from the textbook scale and sat above almost everything the
+  // measurements can produce, which made Oval and Oblong unreachable and left
+  // the final line catching nearly every face — the same catch-all failure
+  // that Diamond had before, just relabelled.
+  if (ratio > 1.38) return 'Oblong';
+  if (ratio > 1.15) return 'Oval';
+  return jawAngleDeg > 141 ? 'Round' : 'Square';
 }
 
 /* ---------- Hairstyle suggestions by shape ---------- */
@@ -2725,7 +2740,15 @@ function showResults(metrics){
     dbg.textContent =
       `ratio=${metrics.ratio.toFixed(3)}  angle=${metrics.jawAngleDeg.toFixed(1)}  `
       + `fore=${metrics.foreheadToFace.toFixed(3)}  jaw=${metrics.jawToFace.toFixed(3)}  `
-      + `-> ${metrics.shape}`;
+      + `-> ${metrics.shape}`
+      + (sideMetrics
+          ? `\nSIDE  balance=${sideMetrics.chinBalance.toFixed(3)}  `
+            + `nasal=${sideMetrics.nasalAngleDeg.toFixed(1)}  `
+            + `chin=${sideMetrics.chinProjection.toFixed(3)}  `
+            + `jawProf=${sideMetrics.jawProfileAngleDeg.toFixed(1)}  `
+            + `-> ${sideMetrics.profileType}`
+          : '');
+    dbg.style.whiteSpace = 'pre-line';
   }
   if (sideMetrics) els.mProfileType.textContent = t('profile' + sideMetrics.profileType);
 
@@ -2981,7 +3004,7 @@ function computeSideMetrics(mesh){
   // back behind it (nose forward). The unsigned chinProjection kept for
   // the ring display only carries magnitude, not direction.
   const facingDir = dx >= 0 ? 1 : -1;
-  const chinBalance = (facingDir * (chin.x - noseTip.x)) / faceWidth;
+  const rawChinBalance = (facingDir * (chin.x - noseTip.x)) / faceWidth;
 
   // Minimum-turn check. Every measurement above assumes the head is actually
   // TURNED — nasal bridge angle, chin projection and jaw profile are all
@@ -2999,6 +3022,16 @@ function computeSideMetrics(mesh){
     throw new Error('NO_FACE'); // reuses the "turn is wrong, try ~30-45°" hint
   }
 
+  // Normalise the chin/nose offset by how far the head is actually turned.
+  // Both points sit near the midline in a barely-turned shot and separate as
+  // the head rotates, so the raw offset scales with the photo's angle rather
+  // than with the person's profile: the same face measured Straight in a
+  // lightly-turned photo and Convex in a strongly-turned one. Dividing by the
+  // turn removes that dependency, leaving a number that reflects the profile
+  // itself. turnAmount is guaranteed >= 0.14 by the check above, so this
+  // can't divide by zero or explode.
+  const chinBalance = rawChinBalance / turnAmount;
+
   const profileType = classifyProfile(chinBalance);
 
   if (![nasalAngleDeg, chinProjection, jawProfileAngleDeg, chinBalance].every(Number.isFinite)){
@@ -3012,9 +3045,16 @@ function computeSideMetrics(mesh){
 // validated against a large set of real photos — these are a reasonable
 // starting point, not a calibrated clinical cutoff. Revisit if real-world
 // results skew heavily toward one category.
+// Thresholds on the turn-normalised chinBalance. The old +-0.04 belonged to
+// the raw, un-normalised value; on this scale it would sit so low that almost
+// nothing could land in the middle and Straight would stop being reachable —
+// the same "one label swallows everything" failure the face-shape classifier
+// hit twice. These split the observed range roughly into thirds, and like the
+// face-shape cutoffs they're set from a small number of real readings, so
+// they're worth re-checking against more photos.
 function classifyProfile(chinBalance){
-  if (chinBalance >= 0.04) return 'Concave';
-  if (chinBalance <= -0.04) return 'Convex';
+  if (chinBalance >= 0.18) return 'Concave';
+  if (chinBalance <= -0.18) return 'Convex';
   return 'Straight';
 }
 
