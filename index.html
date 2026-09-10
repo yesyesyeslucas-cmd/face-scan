@@ -397,14 +397,12 @@
   <h1 data-i18n="welcomeTitle">Face Scan</h1>
   <p data-i18n="welcomeSub">A real landmark-based scan of your front-facing photo — face shape, jaw angle, symmetry, facial thirds — matched to hairstyles that fit what's actually measured.</p>
   <div class="auth-actions">
-    <!-- Width is pinned just wide enough to hold the 320px button passed to
-         renderButton() below, with a little slack on each side. Without the
-         width cap, Google's own wrapper stretches to the full panel width
-         with a square white background, so the button reads as a white
-         rectangle with a pill floating inside it. The slack matters too: with
-         the container exactly 320px the clip boundary lands right on the
-         button's own edge and shaves the Google "G". -->
-    <div id="googleBtnReal" style="display:flex; justify-content:center; align-items:center; min-height:44px; width:min(344px,100%); margin:0 auto; border-radius:999px; overflow:hidden;"></div>
+    <!-- Sized to match the "Continue as Guest" button directly below: same
+         full width of the 280px .auth-actions column, and the same 30px
+         corner radius .auth-btn uses, so the two read as a matching pair.
+         The clip also stops Google's own wrapper showing square corners
+         behind the button it draws. -->
+    <div id="googleBtnReal" style="display:flex; justify-content:center; align-items:center; min-height:44px; width:100%; border-radius:30px; overflow:hidden;"></div>
     <div id="googleBtnError" style="display:none; text-align:center; font-family:'Space Mono',monospace; font-size:11px; color:var(--accent); margin-top:4px;">
       <span data-i18n="googleSignInError">Couldn't load Google Sign-In — check your connection and</span> <span id="googleBtnRetry" data-i18n="tapToRetry" style="text-decoration:underline; cursor:pointer;">tap to retry</span>.
     </div>
@@ -478,13 +476,11 @@
     });
     const target = document.getElementById('googleBtnReal');
     target.innerHTML = '';
-    // No explicit `width` here on purpose. Forcing one (we had 320) makes
-    // Google lay the button's contents out to fit that box, which pushed the
-    // "G" mark hard against the left edge of its own pill and shaved it. Left
-    // to size itself, the button keeps its intended internal spacing; the
-    // wrapper div caps the overall width so it still can't stretch.
+    // 280 matches the .auth-actions column width the guest button fills, so
+    // Google's button ends up the same size as the one beneath it rather
+    // than sitting noticeably narrower.
     google.accounts.id.renderButton(target, {
-      theme: 'filled_white', size: 'large', shape: 'pill', text: 'signin_with', locale: googleLocale,
+      theme: 'filled_white', size: 'large', shape: 'pill', width: 280, text: 'signin_with', locale: googleLocale,
     });
     return true;
   };
