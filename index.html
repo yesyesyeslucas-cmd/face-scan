@@ -23,11 +23,13 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{ height:100%; background:var(--bg); overscroll-behavior-y: contain; scrollbar-width:none; -ms-overflow-style:none; }
-  html::-webkit-scrollbar, body::-webkit-scrollbar{ display:none; width:0; height:0; }
-  /* The paywall is a fixed overlay with its own scroll container, so it
-     doesn't inherit the rule above and was drawing a visible scrollbar down
-     its right edge. Scrolling still works — only the bar is hidden. */
-  #paywall::-webkit-scrollbar{ display:none; width:0; height:0; }
+  /* Scrollbars stay hidden everywhere, not just on html/body. The app has
+     several full-screen scroll containers of its own — the paywall, both
+     onboarding steps and the legal modal — and each draws its own bar, so
+     targeting them one by one is easy to get wrong (and did: the paywall
+     showed a bar down its right edge). Scrolling itself is untouched. */
+  *{ scrollbar-width:none; -ms-overflow-style:none; }
+  *::-webkit-scrollbar{ display:none; width:0; height:0; }
   *{
     -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent;
     -webkit-touch-callout:none;
