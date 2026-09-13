@@ -171,6 +171,10 @@
   .plan-card .plan-sub{ font-size:11.5px; color:var(--ink-dim); margin-top:4px; }
 
   .onboard-inner{ max-width:420px; margin:0 auto; padding-top:14vh; display:flex; flex-direction:column; align-items:center; text-align:center; }
+  .onboard-progress{ display:flex; gap:6px; width:100%; max-width:180px; margin-bottom:16px; opacity:0; animation: onbFadeUp .5s ease 0s forwards; }
+  .onboard-progress .seg{ flex:1; height:3px; border-radius:2px; background:var(--line); transition: background .3s ease; }
+  .onboard-progress .seg.active{ background:var(--signal); box-shadow:0 0 8px -1px rgba(34,211,238,0.7); }
+  .onboard-progress .seg.done{ background:var(--signal-dim); }
   .onboard-step-label{ font-family:'Space Mono',monospace; font-size:11px; letter-spacing:.16em; color:var(--signal); opacity:0; animation: onbFadeUp .5s ease .05s forwards; }
   .onboard-title{ font-size:26px; font-weight:700; margin-top:10px; opacity:0; animation: onbFadeUp .5s ease .15s forwards; }
   .onboard-sub{ font-size:13px; color:var(--ink-dim); margin-top:8px; line-height:1.5; opacity:0; animation: onbFadeUp .5s ease .25s forwards; }
@@ -509,6 +513,7 @@
 
 <div class="onboard" id="onboardGender" style="display:none; position:fixed; inset:0; z-index:95; background:var(--bg); overflow-y:auto; padding:0 18px;">
   <div class="onboard-inner">
+    <div class="onboard-progress"><span class="seg active"></span><span class="seg"></span></div>
     <div class="onboard-step-label" data-i18n="onboardStep1">STEP 1 OF 2</div>
     <h2 class="onboard-title" data-i18n="genderTitle">What's your gender?</h2>
     <p class="onboard-sub" data-i18n="genderSub">This helps tailor hairstyle suggestions to you.</p>
@@ -530,7 +535,13 @@
 </div>
 
 <div class="onboard" id="onboardDOB" style="display:none; position:fixed; inset:0; z-index:95; background:var(--bg); overflow-y:auto; padding:0 18px;">
+  <!-- top:54px clears the fixed language/text-size/exercises shortcut
+       buttons (top:12px, z-index:200) — same reasoning as the photo-adjust
+       header and the paywall's close button, which reserve the same space
+       instead of sitting under those always-on-top controls. -->
+  <button id="dobBackBtn" type="button" aria-label="Back" style="position:absolute; top:54px; left:18px; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:rgba(11,19,30,0.85); color:var(--ink-dim); font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); z-index:5;">‹</button>
   <div class="onboard-inner">
+    <div class="onboard-progress"><span class="seg done"></span><span class="seg active"></span></div>
     <div class="onboard-step-label" data-i18n="onboardStep2">STEP 2 OF 2</div>
     <h2 class="onboard-title" data-i18n="dobTitle">When's your birthday?</h2>
     <p class="onboard-sub" data-i18n="dobSub">Kept on this device only — never sent anywhere.</p>
@@ -574,6 +585,47 @@
       <span class="footer-link" id="paywallTerms" style="text-decoration:underline; cursor:pointer;" data-i18n="termsOfUse">Terms of Use</span> &nbsp;·&nbsp;
       <span class="footer-link" id="paywallPrivacy" style="text-decoration:underline; cursor:pointer;" data-i18n="privacyPolicy">Privacy Policy</span>
     </p>
+  </div>
+</div>
+
+<!-- Photo adjust overlay: lets the person straighten, pan and zoom a photo
+     before it's scanned, for either the front or side step (adjustTarget
+     tracks which). Added because side-profile readings are the most
+     sensitive to exact framing (a few degrees of unintended tilt skews the
+     nasal/chin/jaw angles), and until now the raw upload went straight into
+     the scanner with no way to fix a slightly crooked or off-center shot. -->
+<div class="photo-adjust" id="photoAdjust" style="display:none; position:fixed; inset:0; z-index:96; background:var(--bg); flex-direction:column;">
+  <!-- top:60px clears the fixed language/text-size/exercises shortcut
+       buttons (top:12px, z-index:200) that stay clickable above every
+       screen in the app, including this one — matching how the paywall
+       reserves the same space instead of covering those buttons. -->
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:60px 18px 0;">
+    <button class="btn ghost" id="adjustCancelBtn" style="width:auto; padding:8px 16px; font-size:13px;" data-i18n="adjustCancel">Cancel</button>
+    <div style="font-family:'Space Mono',monospace; font-size:12px; letter-spacing:1.5px; color:var(--ink-dim);" id="adjustTitle" data-i18n="adjustTitle">STRAIGHTEN &amp; FRAME</div>
+    <button class="btn ghost" id="adjustResetBtn" style="width:auto; padding:8px 16px; font-size:13px;" data-i18n="adjustReset">Reset</button>
+  </div>
+
+  <div style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; touch-action:none;" id="adjustStage">
+    <canvas id="adjustCanvas" style="display:block; touch-action:none; cursor:grab;"></canvas>
+  </div>
+
+  <p style="text-align:center; font-size:12.5px; color:var(--ink-dim); padding:0 24px; margin-top:10px;" id="adjustHint" data-i18n="adjustHintFront">Drag to reposition. Align your eyes with the line and keep your head level.</p>
+
+  <div style="padding:14px 22px 6px;">
+    <div style="display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-dim); margin-bottom:4px;">
+      <span data-i18n="adjustZoom">ZOOM</span><span id="adjustZoomVal">1.00×</span>
+    </div>
+    <input type="range" id="adjustZoomSlider" min="100" max="300" value="100" style="width:100%;">
+  </div>
+  <div style="padding:10px 22px 6px;">
+    <div style="display:flex; justify-content:space-between; font-family:'Space Mono',monospace; font-size:11px; color:var(--ink-dim); margin-bottom:4px;">
+      <span data-i18n="adjustRotation">ROTATION</span><span id="adjustRotVal">0°</span>
+    </div>
+    <input type="range" id="adjustRotSlider" min="-45" max="45" value="0" style="width:100%;">
+  </div>
+
+  <div style="padding:16px 18px 26px;">
+    <button class="btn" id="adjustUseBtn" data-i18n="adjustUse">Use This Photo</button>
   </div>
 </div>
 
@@ -805,6 +857,18 @@ const els = {
   fileSideCamera: document.getElementById('fileSideCamera'),
   fileSideGallery: document.getElementById('fileSideGallery'),
   cameraSideBtn: document.getElementById('cameraSideBtn'),
+  dobBackBtn: document.getElementById('dobBackBtn'),
+  photoAdjust: document.getElementById('photoAdjust'),
+  adjustStage: document.getElementById('adjustStage'),
+  adjustCanvas: document.getElementById('adjustCanvas'),
+  adjustHint: document.getElementById('adjustHint'),
+  adjustZoomSlider: document.getElementById('adjustZoomSlider'),
+  adjustZoomVal: document.getElementById('adjustZoomVal'),
+  adjustRotSlider: document.getElementById('adjustRotSlider'),
+  adjustRotVal: document.getElementById('adjustRotVal'),
+  adjustCancelBtn: document.getElementById('adjustCancelBtn'),
+  adjustResetBtn: document.getElementById('adjustResetBtn'),
+  adjustUseBtn: document.getElementById('adjustUseBtn'),
   gallerySideBtn: document.getElementById('gallerySideBtn'),
   dropSide: document.getElementById('dropSide'),
   photoSide: document.getElementById('photoSide'),
@@ -1008,6 +1072,15 @@ document.getElementById('dobContinueBtn').addEventListener('click', () => {
   saveOnboardingData({ gender: selectedGender, dob: { day, month, year } });
   els.onboardDOB.style.display = 'none';
   showPaywallOrApp();
+});
+
+// Returns to the gender step without losing the earlier pick — the
+// previously selected card still carries its .selected class, since
+// nothing clears it between steps, only at the very start of a fresh
+// onboarding run.
+els.dobBackBtn.addEventListener('click', () => {
+  els.onboardDOB.style.display = 'none';
+  els.onboardGender.style.display = 'block';
 });
 
 /* ---------- Persistence: keep a Google sign-in across page reloads ----------
@@ -1495,22 +1568,186 @@ els.galleryFrontBtn.addEventListener('click', () => els.fileFrontGallery.click()
 function handleFrontFileSelected(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  selectedFile = file;
-  const url = URL.createObjectURL(file);
-  els.photoFront.src = url;
-  els.photoFront.style.display = 'block';
-  els.dropFront.style.display = 'none';
-  els.scanFrontBtn.textContent = t('runScanLabel');
-  els.scanFrontBtn.disabled = !modelsReady;
-  lastFrontStatusKey = modelsReady ? null : 'loadingModel';
-  setFrontStatus(modelsReady ? '' : t('loadingModel'), !modelsReady);
-  // reset any previous overlay
-  const ctx = els.overlayFront.getContext('2d');
-  ctx.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
-  els.overlayFront.style.display = 'none';
+  openPhotoAdjust(file, 'front');
+  e.target.value = '';
 }
 els.fileFrontCamera.addEventListener('change', handleFrontFileSelected);
 els.fileFrontGallery.addEventListener('change', handleFrontFileSelected);
+
+/* ---------- Photo adjust: straighten, pan and zoom before scanning ----------
+   Sits between "photo chosen" and "photo scanned" for both front and side
+   uploads. Side-profile readings especially are sensitive to a few degrees
+   of unintended tilt or an off-center crop, and until now there was no way
+   to fix a slightly crooked shot short of retaking it. Output is a fixed-
+   resolution square JPEG data URL, so downstream code (MediaPipe detection,
+   the <img> display) sees a normal photo and needs no changes of its own. */
+let adjustTarget = null;      // 'front' | 'side'
+let adjustImg = null;         // decoded <img> for the raw upload
+let pendingAdjustFile = null; // original File, kept only for the truthy
+                               // selectedFile/selectedSideFile checks elsewhere
+let adjustState = { scale: 1, rotationDeg: 0, offsetX: 0, offsetY: 0 };
+let adjustDragging = false;
+let adjustDragStart = null;
+const ADJUST_OUTPUT_SIZE = 900; // fixed square output, ample for MediaPipe
+
+function openPhotoAdjust(file, target){
+  adjustTarget = target;
+  pendingAdjustFile = file;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    adjustImg = img;
+    adjustState = { scale: 1, rotationDeg: 0, offsetX: 0, offsetY: 0 };
+    els.adjustZoomSlider.value = 100;
+    els.adjustRotSlider.value = 0;
+    els.adjustZoomVal.textContent = '1.00×';
+    els.adjustRotVal.textContent = '0°';
+    els.adjustHint.textContent = target === 'side' ? t('adjustHintSide') : t('adjustHintFront');
+    els.photoAdjust.style.display = 'flex';
+    sizeAdjustCanvas();
+    drawAdjustCanvas();
+  };
+  img.src = url;
+}
+
+function sizeAdjustCanvas(){
+  const stage = els.adjustStage;
+  const size = Math.max(180, Math.min(stage.clientWidth, stage.clientHeight, 480) - 24);
+  els.adjustCanvas.width = size;
+  els.adjustCanvas.height = size;
+  els.adjustCanvas.style.width = size + 'px';
+  els.adjustCanvas.style.height = size + 'px';
+}
+
+function drawAdjustCanvas(){
+  if (!adjustImg) return;
+  const canvas = els.adjustCanvas;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.translate(w / 2 + adjustState.offsetX, h / 2 + adjustState.offsetY);
+  ctx.rotate(adjustState.rotationDeg * Math.PI / 180);
+  const iw = adjustImg.naturalWidth, ih = adjustImg.naturalHeight;
+  const baseScale = Math.max(w / iw, h / ih); // cover-fit the square frame
+  const scale = baseScale * adjustState.scale;
+  ctx.drawImage(adjustImg, -iw * scale / 2, -ih * scale / 2, iw * scale, ih * scale);
+  ctx.restore();
+
+  // Alignment guide: center line + oval, drawn last so it stays on top and
+  // always reflects the frame the final crop will actually use.
+  ctx.save();
+  ctx.strokeStyle = 'rgba(34,211,238,0.55)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(w / 2, h / 2, w * 0.30, h * 0.40, 0, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
+}
+
+function adjustPointFromEvent(e){
+  return { x: (e.touches ? e.touches[0].clientX : e.clientX), y: (e.touches ? e.touches[0].clientY : e.clientY) };
+}
+els.adjustCanvas.addEventListener('pointerdown', (e) => {
+  adjustDragging = true;
+  const p = adjustPointFromEvent(e);
+  adjustDragStart = { x: p.x, y: p.y, offX: adjustState.offsetX, offY: adjustState.offsetY };
+  try{ els.adjustCanvas.setPointerCapture(e.pointerId); }catch(err){}
+  els.adjustCanvas.style.cursor = 'grabbing';
+});
+els.adjustCanvas.addEventListener('pointermove', (e) => {
+  if (!adjustDragging) return;
+  const p = adjustPointFromEvent(e);
+  adjustState.offsetX = adjustDragStart.offX + (p.x - adjustDragStart.x);
+  adjustState.offsetY = adjustDragStart.offY + (p.y - adjustDragStart.y);
+  drawAdjustCanvas();
+});
+function endAdjustDrag(){ adjustDragging = false; if (els.adjustCanvas) els.adjustCanvas.style.cursor = 'grab'; }
+els.adjustCanvas.addEventListener('pointerup', endAdjustDrag);
+els.adjustCanvas.addEventListener('pointercancel', endAdjustDrag);
+els.adjustCanvas.addEventListener('pointerleave', endAdjustDrag);
+
+els.adjustZoomSlider.addEventListener('input', () => {
+  adjustState.scale = Number(els.adjustZoomSlider.value) / 100;
+  els.adjustZoomVal.textContent = adjustState.scale.toFixed(2) + '×';
+  drawAdjustCanvas();
+});
+els.adjustRotSlider.addEventListener('input', () => {
+  adjustState.rotationDeg = Number(els.adjustRotSlider.value);
+  els.adjustRotVal.textContent = Math.round(adjustState.rotationDeg) + '°';
+  drawAdjustCanvas();
+});
+els.adjustResetBtn.addEventListener('click', () => {
+  adjustState = { scale: 1, rotationDeg: 0, offsetX: 0, offsetY: 0 };
+  els.adjustZoomSlider.value = 100;
+  els.adjustRotSlider.value = 0;
+  els.adjustZoomVal.textContent = '1.00×';
+  els.adjustRotVal.textContent = '0°';
+  drawAdjustCanvas();
+});
+els.adjustCancelBtn.addEventListener('click', () => {
+  els.photoAdjust.style.display = 'none';
+  pendingAdjustFile = null;
+  adjustImg = null;
+});
+window.addEventListener('resize', () => {
+  if (els.photoAdjust.style.display === 'flex'){ sizeAdjustCanvas(); drawAdjustCanvas(); }
+});
+
+els.adjustUseBtn.addEventListener('click', () => {
+  if (!adjustImg) return;
+  // Render the final crop at a fixed output resolution using the exact same
+  // transform math as the live preview, so what the person saw is what gets
+  // scanned — just rasterized crisply instead of at the on-screen canvas size.
+  const out = document.createElement('canvas');
+  out.width = ADJUST_OUTPUT_SIZE;
+  out.height = ADJUST_OUTPUT_SIZE;
+  const ctx = out.getContext('2d');
+  const w = out.width, h = out.height;
+  const previewSize = els.adjustCanvas.width || 1;
+  const upscale = w / previewSize;
+  ctx.save();
+  ctx.translate(w / 2 + adjustState.offsetX * upscale, h / 2 + adjustState.offsetY * upscale);
+  ctx.rotate(adjustState.rotationDeg * Math.PI / 180);
+  const iw = adjustImg.naturalWidth, ih = adjustImg.naturalHeight;
+  const baseScale = Math.max(w / iw, h / ih);
+  const scale = baseScale * adjustState.scale;
+  ctx.drawImage(adjustImg, -iw * scale / 2, -ih * scale / 2, iw * scale, ih * scale);
+  ctx.restore();
+
+  const dataUrl = out.toDataURL('image/jpeg', 0.92);
+  finalizeAdjustedPhoto(adjustTarget, dataUrl);
+  els.photoAdjust.style.display = 'none';
+});
+
+function finalizeAdjustedPhoto(target, dataUrl){
+  if (target === 'front'){
+    selectedFile = pendingAdjustFile;
+    els.photoFront.src = dataUrl;
+    els.photoFront.style.display = 'block';
+    els.dropFront.style.display = 'none';
+    els.scanFrontBtn.textContent = t('runScanLabel');
+    els.scanFrontBtn.disabled = !modelsReady;
+    lastFrontStatusKey = modelsReady ? null : 'loadingModel';
+    setFrontStatus(modelsReady ? '' : t('loadingModel'), !modelsReady);
+    const ctx = els.overlayFront.getContext('2d');
+    ctx.clearRect(0, 0, els.overlayFront.width, els.overlayFront.height);
+    els.overlayFront.style.display = 'none';
+  } else {
+    selectedSideFile = pendingAdjustFile;
+    els.photoSide.src = dataUrl;
+    els.photoSide.style.display = 'block';
+    els.dropSide.style.display = 'none';
+    els.scanSideBtn.textContent = t('runScanLabel');
+    els.scanSideBtn.disabled = !modelsReady;
+    lastSideStatusKey = modelsReady ? null : 'loadingModel';
+    setSideStatus(modelsReady ? '' : t('loadingModel'), !modelsReady);
+    const ctx = els.overlaySide.getContext('2d');
+    ctx.clearRect(0, 0, els.overlaySide.width, els.overlaySide.height);
+    els.overlaySide.style.display = 'none';
+  }
+  pendingAdjustFile = null;
+  adjustImg = null;
+}
 
 /* ---------- Run scan ---------- */
 els.scanFrontBtn.addEventListener('click', runScan);
@@ -2901,18 +3138,8 @@ els.gallerySideBtn.addEventListener('click', () => els.fileSideGallery.click());
 function handleSideFileSelected(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  selectedSideFile = file;
-  const url = URL.createObjectURL(file);
-  els.photoSide.src = url;
-  els.photoSide.style.display = 'block';
-  els.dropSide.style.display = 'none';
-  els.scanSideBtn.textContent = t('runScanLabel');
-  els.scanSideBtn.disabled = !modelsReady;
-  lastSideStatusKey = modelsReady ? null : 'loadingModel';
-  setSideStatus(modelsReady ? '' : t('loadingModel'), !modelsReady);
-  const ctx = els.overlaySide.getContext('2d');
-  ctx.clearRect(0, 0, els.overlaySide.width, els.overlaySide.height);
-  els.overlaySide.style.display = 'none';
+  openPhotoAdjust(file, 'side');
+  e.target.value = '';
 }
 els.fileSideCamera.addEventListener('change', handleSideFileSelected);
 els.fileSideGallery.addEventListener('change', handleSideFileSelected);
@@ -3512,7 +3739,7 @@ const TRANSLATIONS = {
     liveScan: 'Live structural scan', headerTitle: 'Scan your face, find your cut', headerSub: 'Everything runs in your browser. No photo is uploaded anywhere, no score, no comparison to anyone else.',
     frontTitle: 'Front-facing photo', frontHint: 'Look straight at the camera, even lighting, hair off your forehead if possible.',
     dropMsg: 'Use a button below to add a photo', takePhoto: '📷 Take Photo', gallery: '🖼 Gallery', choosePhoto: 'Choose a photo', runScanLabel: 'Run scan',
-    sideTitle: 'Side profile photo', sideHint: "Turn your head about 30–45° to one side — a straight-on 90° profile usually won't detect a face at all, since the model needs both eyes at least partly visible.",
+    sideTitle: 'Side profile photo', sideHint: "Turn your head about 30–45° to one side — a straight-on 90° profile usually won't detect a face at all, since the model needs both eyes at least partly visible.", adjustTitle: 'STRAIGHTEN & FRAME', adjustCancel: 'Cancel', adjustReset: 'Reset', adjustUse: 'Use This Photo', adjustZoom: 'ZOOM', adjustRotation: 'ROTATION', adjustHintFront: 'Drag to reposition. Align your eyes with the line and keep your head level.', adjustHintSide: 'Drag to reposition. Center your profile in the guide and keep the horizon level.',
     skipStep: 'Skip this step',
     frontMeasurements: 'Front measurements', approxNote: 'Approximate values, sensitive to angle, lighting, and head tilt — this is geometry, not a clinical or attractiveness measure.',
     mFaceShape: 'Face shape', mRatioLabel: 'Length / width ratio', mJawLabel: 'Jaw corner angle', mThirdsLabel: 'Facial thirds balance', mSymLabel: 'Left/right symmetry gap',
@@ -3557,7 +3784,7 @@ const TRANSLATIONS = {
     liveScan: 'Escaneo estructural en vivo', headerTitle: 'Escanea tu rostro, encuentra tu corte', headerSub: 'Todo se ejecuta en tu navegador. Ninguna foto se sube a ningún lado, sin puntuación, sin comparación con nadie más.',
     frontTitle: 'Foto frontal', frontHint: 'Mira directo a la cámara, con luz uniforme, y el cabello fuera de la frente si es posible.',
     dropMsg: 'Usa un botón abajo para añadir una foto', takePhoto: '📷 Tomar foto', gallery: '🖼 Galería', choosePhoto: 'Elige una foto', runScanLabel: 'Iniciar escaneo',
-    sideTitle: 'Foto de perfil lateral', sideHint: 'Gira tu cabeza unos 30–45° hacia un lado — un perfil de 90° normalmente no detecta ningún rostro, ya que el modelo necesita ver al menos parcialmente ambos ojos.',
+    sideTitle: 'Foto de perfil lateral', sideHint: 'Gira tu cabeza unos 30–45° hacia un lado — un perfil de 90° normalmente no detecta ningún rostro, ya que el modelo necesita ver al menos parcialmente ambos ojos.', adjustTitle: 'ENDEREZAR Y ENCUADRAR', adjustCancel: 'Cancelar', adjustReset: 'Restablecer', adjustUse: 'Usar esta foto', adjustZoom: 'ZOOM', adjustRotation: 'ROTACIÓN', adjustHintFront: 'Arrastra para reposicionar. Alinea tus ojos con la línea y mantén la cabeza nivelada.', adjustHintSide: 'Arrastra para reposicionar. Centra tu perfil en la guía y mantén el horizonte nivelado.',
     skipStep: 'Omitir este paso',
     frontMeasurements: 'Medidas frontales', approxNote: 'Valores aproximados, sensibles al ángulo, la iluminación y la inclinación de la cabeza — esto es geometría, no una medida clínica ni de atractivo.',
     mFaceShape: 'Forma del rostro', mRatioLabel: 'Relación largo / ancho', mJawLabel: 'Ángulo de la mandíbula', mThirdsLabel: 'Balance de tercios faciales', mSymLabel: 'Diferencia de simetría izquierda/derecha',
@@ -3606,7 +3833,7 @@ const TRANSLATIONS = {
     liveScan: 'Análise estrutural ao vivo', headerTitle: 'Analise seu rosto, encontre seu corte', headerSub: 'Tudo roda no seu navegador. Nenhuma foto é enviada a lugar nenhum, sem pontuação, sem comparação com ninguém.',
     frontTitle: 'Foto frontal', frontHint: 'Olhe diretamente para a câmera, com luz uniforme, e o cabelo fora da testa se possível.',
     dropMsg: 'Use um botão abaixo para adicionar uma foto', takePhoto: '📷 Tirar foto', gallery: '🖼 Galeria', choosePhoto: 'Escolha uma foto', runScanLabel: 'Iniciar análise',
-    sideTitle: 'Foto de perfil lateral', sideHint: 'Vire a cabeça cerca de 30–45° para o lado — um perfil de 90° geralmente não detecta nenhum rosto, já que o modelo precisa ver pelo menos parcialmente os dois olhos.',
+    sideTitle: 'Foto de perfil lateral', sideHint: 'Vire a cabeça cerca de 30–45° para o lado — um perfil de 90° geralmente não detecta nenhum rosto, já que o modelo precisa ver pelo menos parcialmente os dois olhos.', adjustTitle: 'ENDIREITAR E ENQUADRAR', adjustCancel: 'Cancelar', adjustReset: 'Redefinir', adjustUse: 'Usar esta foto', adjustZoom: 'ZOOM', adjustRotation: 'ROTAÇÃO', adjustHintFront: 'Arraste para reposicionar. Alinhe seus olhos com a linha e mantenha a cabeça nivelada.', adjustHintSide: 'Arraste para reposicionar. Centralize seu perfil no guia e mantenha o horizonte nivelado.',
     skipStep: 'Pular esta etapa',
     frontMeasurements: 'Medidas frontais', approxNote: 'Valores aproximados, sensíveis ao ângulo, iluminação e inclinação da cabeça — isso é geometria, não uma medida clínica ou de atratividade.',
     mFaceShape: 'Formato do rosto', mRatioLabel: 'Proporção comprimento / largura', mJawLabel: 'Ângulo da mandíbula', mThirdsLabel: 'Equilíbrio dos terços faciais', mSymLabel: 'Diferença de simetria esquerda/direita',
@@ -3651,7 +3878,7 @@ const TRANSLATIONS = {
     liveScan: 'Canlı yapısal tarama', headerTitle: 'Yüzünü tara, kendi kesimini bul', headerSub: 'Her şey tarayıcında çalışır. Hiçbir fotoğraf hiçbir yere yüklenmez, puanlama yok, kimseyle karşılaştırma yok.',
     frontTitle: 'Ön yüz fotoğrafı', frontHint: 'Kameraya düz bak, ışık eşit olsun, mümkünse saçların alnından çekilmiş olsun.',
     dropMsg: 'Fotoğraf eklemek için aşağıdaki bir düğmeyi kullan', takePhoto: '📷 Fotoğraf Çek', gallery: '🖼 Galeri', choosePhoto: 'Bir fotoğraf seç', runScanLabel: 'Taramayı başlat',
-    sideTitle: 'Yan profil fotoğrafı', sideHint: 'Başını yaklaşık 30–45° yana çevir — tam 90° profil genellikle hiçbir yüz algılamaz, çünkü model her iki gözün de en azından kısmen görünür olmasına ihtiyaç duyar.',
+    sideTitle: 'Yan profil fotoğrafı', sideHint: 'Başını yaklaşık 30–45° yana çevir — tam 90° profil genellikle hiçbir yüz algılamaz, çünkü model her iki gözün de en azından kısmen görünür olmasına ihtiyaç duyar.', adjustTitle: 'DÜZLEŞTİR VE KADRAJLA', adjustCancel: 'İptal', adjustReset: 'Sıfırla', adjustUse: 'Bu Fotoğrafı Kullan', adjustZoom: 'YAKINLAŞTIRMA', adjustRotation: 'DÖNDÜRME', adjustHintFront: 'Konumlandırmak için sürükle. Gözlerini çizgiyle hizala, başını düz tut.', adjustHintSide: 'Konumlandırmak için sürükle. Profilini kılavuzun ortasına al, ufku düz tut.',
     skipStep: 'Bu adımı atla',
     frontMeasurements: 'Ön ölçümler', approxNote: 'Yaklaşık değerler, açıya, ışığa ve baş eğimine duyarlıdır — bu bir geometri ölçümüdür, klinik ya da çekicilik ölçümü değildir.',
     mFaceShape: 'Yüz şekli', mRatioLabel: 'Uzunluk / genişlik oranı', mJawLabel: 'Çene köşe açısı', mThirdsLabel: 'Yüz üçte biri dengesi', mSymLabel: 'Sol/sağ simetri farkı',
@@ -3696,7 +3923,7 @@ const TRANSLATIONS = {
     liveScan: 'Canlı struktur skan', headerTitle: 'Üzünü skan et, öz kəsimini tap', headerSub: 'Hər şey brauzerində işləyir. Heç bir şəkil heç yerə yüklənmir, xal yoxdur, heç kimlə müqayisə yoxdur.',
     frontTitle: 'Ön üz şəkli', frontHint: 'Birbaşa kameraya bax, işıq bərabər olsun, mümkünsə saçlar alından çəkilsin.',
     dropMsg: 'Şəkil əlavə etmək üçün aşağıdakı düyməni istifadə et', takePhoto: '📷 Şəkil Çək', gallery: '🖼 Qalereya', choosePhoto: 'Bir şəkil seç', runScanLabel: 'Skanı başlat',
-    sideTitle: 'Yan profil şəkli', sideHint: 'Başını təxminən 30–45° yana çevir — tam 90° profil adətən heç bir üz aşkarlamır, çünki model hər iki gözün ən azı qismən görünməsinə ehtiyac duyur.',
+    sideTitle: 'Yan profil şəkli', sideHint: 'Başını təxminən 30–45° yana çevir — tam 90° profil adətən heç bir üz aşkarlamır, çünki model hər iki gözün ən azı qismən görünməsinə ehtiyac duyur.', adjustTitle: 'DÜZƏLT VƏ ÇƏRÇİVƏLƏ', adjustCancel: 'Ləğv et', adjustReset: 'Sıfırla', adjustUse: 'Bu Şəkli İstifadə Et', adjustZoom: 'YAXINLAŞDIRMA', adjustRotation: 'FIRLANMA', adjustHintFront: 'Yerini dəyişmək üçün sürüşdür. Gözlərini xətlə düzləndir, başını düz saxla.', adjustHintSide: 'Yerini dəyişmək üçün sürüşdür. Profilini bələdçinin mərkəzinə al, üfüqi xətti düz saxla.',
     skipStep: 'Bu addımı keç',
     frontMeasurements: 'Ön ölçmələr', approxNote: 'Təxmini dəyərlər, bucağa, işığa və baş əyilməsinə həssasdır — bu bir həndəsə ölçməsidir, klinik və ya cəlbedicilik ölçməsi deyil.',
     mFaceShape: 'Üz forması', mRatioLabel: 'Uzunluq / en nisbəti', mJawLabel: 'Çənə künc bucağı', mThirdsLabel: 'Üz üçdəbiri balansı', mSymLabel: 'Sol/sağ simmetriya fərqi',
@@ -3741,7 +3968,7 @@ const TRANSLATIONS = {
     liveScan: 'Живой структурный анализ', headerTitle: 'Отсканируйте лицо, найдите свою стрижку', headerSub: 'Всё работает прямо в вашем браузере. Ни одно фото никуда не загружается, нет баллов, нет сравнения с другими.',
     frontTitle: 'Фото анфас', frontHint: 'Смотрите прямо в камеру, свет должен быть равномерным, по возможности уберите волосы со лба.',
     dropMsg: 'Используйте кнопку ниже, чтобы добавить фото', takePhoto: '📷 Сделать фото', gallery: '🖼 Галерея', choosePhoto: 'Выберите фото', runScanLabel: 'Начать сканирование',
-    sideTitle: 'Фото бокового профиля', sideHint: 'Поверните голову примерно на 30–45° в сторону — при развороте ровно на 90° лицо обычно вообще не распознаётся, так как модели нужно видеть хотя бы частично оба глаза.',
+    sideTitle: 'Фото бокового профиля', sideHint: 'Поверните голову примерно на 30–45° в сторону — при развороте ровно на 90° лицо обычно вообще не распознаётся, так как модели нужно видеть хотя бы частично оба глаза.', adjustTitle: 'ВЫРОВНЯТЬ И КАДРИРОВАТЬ', adjustCancel: 'Отмена', adjustReset: 'Сбросить', adjustUse: 'Использовать это фото', adjustZoom: 'МАСШТАБ', adjustRotation: 'ПОВОРОТ', adjustHintFront: 'Перетащите для перемещения. Совместите глаза с линией и держите голову ровно.', adjustHintSide: 'Перетащите для перемещения. Отцентрируйте профиль в направляющей и держите горизонт ровно.',
     skipStep: 'Пропустить этот шаг',
     frontMeasurements: 'Измерения анфас', approxNote: 'Приблизительные значения, чувствительные к углу, освещению и наклону головы — это геометрия, а не клиническая оценка или оценка привлекательности.',
     mFaceShape: 'Форма лица', mRatioLabel: 'Соотношение длины и ширины', mJawLabel: 'Угол угла челюсти', mThirdsLabel: 'Баланс третей лица', mSymLabel: 'Разница симметрии слева/справа',
@@ -3786,7 +4013,7 @@ const TRANSLATIONS = {
     liveScan: 'Live-Strukturanalyse', headerTitle: 'Scanne dein Gesicht, finde deinen Schnitt', headerSub: 'Alles läuft in deinem Browser. Kein Foto wird irgendwohin hochgeladen, keine Bewertung, kein Vergleich mit anderen.',
     frontTitle: 'Frontfoto', frontHint: 'Schau direkt in die Kamera, achte auf gleichmäßiges Licht, und wenn möglich die Haare aus der Stirn.',
     dropMsg: 'Nutze einen Button unten, um ein Foto hinzuzufügen', takePhoto: '📷 Foto aufnehmen', gallery: '🖼 Galerie', choosePhoto: 'Foto auswählen', runScanLabel: 'Scan starten',
-    sideTitle: 'Seitenprofil-Foto', sideHint: 'Drehe deinen Kopf etwa 30–45° zur Seite — ein reines 90°-Profil erkennt meist gar kein Gesicht, da das Modell mindestens teilweise beide Augen sehen muss.',
+    sideTitle: 'Seitenprofil-Foto', sideHint: 'Drehe deinen Kopf etwa 30–45° zur Seite — ein reines 90°-Profil erkennt meist gar kein Gesicht, da das Modell mindestens teilweise beide Augen sehen muss.', adjustTitle: 'AUSRICHTEN & RAHMEN', adjustCancel: 'Abbrechen', adjustReset: 'Zurücksetzen', adjustUse: 'Dieses Foto verwenden', adjustZoom: 'ZOOM', adjustRotation: 'DREHUNG', adjustHintFront: 'Ziehen zum Verschieben. Richte deine Augen an der Linie aus und halte den Kopf gerade.', adjustHintSide: 'Ziehen zum Verschieben. Zentriere dein Profil im Rahmen und halte den Horizont gerade.',
     skipStep: 'Diesen Schritt überspringen',
     frontMeasurements: 'Frontmessungen', approxNote: 'Ungefähre Werte, empfindlich gegenüber Winkel, Licht und Kopfneigung — das ist Geometrie, keine klinische oder Attraktivitätsmessung.',
     mFaceShape: 'Gesichtsform', mRatioLabel: 'Verhältnis Länge / Breite', mJawLabel: 'Kieferwinkel', mThirdsLabel: 'Balance der Gesichtsdrittel', mSymLabel: 'Symmetrie-Differenz links/rechts',
