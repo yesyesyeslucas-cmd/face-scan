@@ -3138,8 +3138,18 @@ els.gallerySideBtn.addEventListener('click', () => els.fileSideGallery.click());
 function handleSideFileSelected(e){
   const file = e.target.files && e.target.files[0];
   if (!file) return;
-  openPhotoAdjust(file, 'side');
-  e.target.value = '';
+  selectedSideFile = file;
+  const url = URL.createObjectURL(file);
+  els.photoSide.src = url;
+  els.photoSide.style.display = 'block';
+  els.dropSide.style.display = 'none';
+  els.scanSideBtn.textContent = t('runScanLabel');
+  els.scanSideBtn.disabled = !modelsReady;
+  lastSideStatusKey = modelsReady ? null : 'loadingModel';
+  setSideStatus(modelsReady ? '' : t('loadingModel'), !modelsReady);
+  const ctx = els.overlaySide.getContext('2d');
+  ctx.clearRect(0, 0, els.overlaySide.width, els.overlaySide.height);
+  els.overlaySide.style.display = 'none';
 }
 els.fileSideCamera.addEventListener('change', handleSideFileSelected);
 els.fileSideGallery.addEventListener('change', handleSideFileSelected);
