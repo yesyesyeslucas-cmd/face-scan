@@ -418,6 +418,11 @@
 </button>
 
 <div class="welcome" id="welcome">
+  <!-- Hidden by default — only shown when this screen was reached via the
+       "switch" link (an already-signed-in person browsing away from their
+       account by mistake), never on a genuine first-run/logged-out visit,
+       where there is nothing yet to go back to. -->
+  <button id="welcomeCancelBtn" type="button" style="display:none; position:absolute; top:54px; left:18px; padding:8px 16px; border-radius:20px; border:1px solid var(--line); background:rgba(11,19,30,0.85); color:var(--ink-dim); font-size:13px; cursor:pointer; backdrop-filter:blur(4px); z-index:5;" data-i18n="welcomeCancel">‹ Cancel</button>
   <div class="welcome-ring"><span>◎</span></div>
   <h1 data-i18n="welcomeTitle">Face Scan</h1>
   <p data-i18n="welcomeSub">A real landmark-based scan of your front-facing photo — face shape, jaw angle, symmetry, facial thirds — matched to hairstyles that fit what's actually measured.</p>
@@ -858,6 +863,7 @@ const els = {
   fileSideGallery: document.getElementById('fileSideGallery'),
   cameraSideBtn: document.getElementById('cameraSideBtn'),
   dobBackBtn: document.getElementById('dobBackBtn'),
+  welcomeCancelBtn: document.getElementById('welcomeCancelBtn'),
   photoAdjust: document.getElementById('photoAdjust'),
   adjustStage: document.getElementById('adjustStage'),
   adjustCanvas: document.getElementById('adjustCanvas'),
@@ -1455,11 +1461,32 @@ function onPremiumUnlocked(){
 document.getElementById('paywallTerms').addEventListener('click', () => openLegal('terms'));
 document.getElementById('paywallPrivacy').addEventListener('click', () => openLegal('privacy'));
 
+// Remembers who was signed in and which screen was showing right before
+// "switch" was clicked, so the new Cancel button can put both back exactly
+// as they were — someone who taps "switch" by mistake shouldn't have to
+// sign in all over again to undo it.
+let preSwitchUser = null;
+let preSwitchScreen = null;
+
 els.authSwitch.addEventListener('click', () => {
+  preSwitchUser = currentUser;
+  preSwitchScreen = currentScreenName;
   currentUser = null;
   clearStoredUser();
   renderAuthBadge();
   showScreen('welcome');
+  els.welcomeCancelBtn.style.display = 'block';
+});
+
+els.welcomeCancelBtn.addEventListener('click', () => {
+  if (!preSwitchUser) return; // safety guard — button shouldn't be visible without it
+  currentUser = preSwitchUser;
+  if (currentUser.provider === 'google') saveUserToStorage(currentUser);
+  renderAuthBadge();
+  showScreen(preSwitchScreen);
+  els.welcomeCancelBtn.style.display = 'none';
+  preSwitchUser = null;
+  preSwitchScreen = null;
 });
 
 /* ---------- Load models ---------- */
@@ -3740,7 +3767,7 @@ const LANGUAGES = [
 const TRANSLATIONS = {
   en: {
     welcomeTitle: 'Face Scan', welcomeSub: "A real landmark-based scan of your front-facing photo — face shape, jaw angle, symmetry, facial thirds — matched to hairstyles that fit what's actually measured.",
-    continueGuest: 'Continue as Guest', guestWord: 'Guest', stepFront: 'Front photo', stepSide: 'Side profile', stepResults: 'Results', stepExercises: 'Exercises',
+    continueGuest: 'Continue as Guest', guestWord: 'Guest', welcomeCancel: '‹ Cancel', stepFront: 'Front photo', stepSide: 'Side profile', stepResults: 'Results', stepExercises: 'Exercises',
     googleSignInError: "Couldn't load Google Sign-In — check your connection and", tapToRetry: 'tap to retry',
     onboardStep1: 'STEP 1 OF 2', genderTitle: "What's your gender?", genderSub: 'This helps tailor hairstyle suggestions to you.', genderMale: 'Male', genderFemale: 'Female',
     onboardStep2: 'STEP 2 OF 2', dobTitle: "When's your birthday?", dobSub: 'Kept on this device only — never sent anywhere.', continueWord: 'Continue',
@@ -3785,7 +3812,7 @@ const TRANSLATIONS = {
   },
   es: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Un escaneo real basado en puntos de referencia de tu foto frontal — forma del rostro, ángulo de la mandíbula, simetría, tercios faciales — combinado con cortes de pelo que se ajustan a lo que realmente se midió.',
-    continueGuest: 'Continuar como invitado', guestWord: 'Invitado', stepFront: 'Foto frontal', stepSide: 'Perfil lateral', stepResults: 'Resultados', stepExercises: 'Ejercicios',
+    continueGuest: 'Continuar como invitado', guestWord: 'Invitado', welcomeCancel: '‹ Cancelar', stepFront: 'Foto frontal', stepSide: 'Perfil lateral', stepResults: 'Resultados', stepExercises: 'Ejercicios',
     googleSignInError: 'No se pudo cargar el inicio de sesión de Google — comprueba tu conexión y', tapToRetry: 'toca para reintentar',
     onboardStep1: 'PASO 1 DE 2', genderTitle: '¿Cuál es tu género?', genderSub: 'Esto ayuda a personalizar las sugerencias de peinado para ti.', genderMale: 'Hombre', genderFemale: 'Mujer',
     onboardStep2: 'PASO 2 DE 2', dobTitle: '¿Cuándo es tu cumpleaños?', dobSub: 'Se guarda solo en este dispositivo — nunca se envía a ningún lado.', continueWord: 'Continuar',
@@ -3830,7 +3857,7 @@ const TRANSLATIONS = {
   },
   pt: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Uma análise real baseada em pontos de referência da sua foto frontal — formato do rosto, ângulo da mandíbula, simetria, terços faciais — combinada com cortes de cabelo que combinam com o que foi realmente medido.',
-    continueGuest: 'Continuar como convidado', guestWord: 'Convidado', stepFront: 'Foto frontal', stepSide: 'Perfil lateral', stepResults: 'Resultados', stepExercises: 'Exercícios',
+    continueGuest: 'Continuar como convidado', guestWord: 'Convidado', welcomeCancel: '‹ Cancelar', stepFront: 'Foto frontal', stepSide: 'Perfil lateral', stepResults: 'Resultados', stepExercises: 'Exercícios',
     googleSignInError: 'Não foi possível carregar o login do Google — verifique sua conexão e', tapToRetry: 'toque para tentar novamente',
     onboardStep1: 'ETAPA 1 DE 2', genderTitle: 'Qual é o seu gênero?', genderSub: 'Isso ajuda a personalizar as sugestões de penteado para você.', genderMale: 'Masculino', genderFemale: 'Feminino',
     onboardStep2: 'ETAPA 2 DE 2', dobTitle: 'Quando é o seu aniversário?', dobSub: 'Fica salvo apenas neste dispositivo — nunca é enviado a lugar nenhum.', continueWord: 'Continuar',
@@ -3875,7 +3902,7 @@ const TRANSLATIONS = {
   },
   tr: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Önden çekilmiş fotoğrafının gerçek landmark tabanlı taraması — yüz şekli, çene açısı, simetri, yüz üçte birleri — gerçekten ölçülene uygun saç stilleriyle eşleştirilir.',
-    continueGuest: 'Misafir olarak devam et', guestWord: 'Misafir', stepFront: 'Ön fotoğraf', stepSide: 'Yan profil', stepResults: 'Sonuçlar', stepExercises: 'Egzersizler',
+    continueGuest: 'Misafir olarak devam et', guestWord: 'Misafir', welcomeCancel: '‹ İptal', stepFront: 'Ön fotoğraf', stepSide: 'Yan profil', stepResults: 'Sonuçlar', stepExercises: 'Egzersizler',
     googleSignInError: 'Google ile Giriş yüklenemedi — bağlantını kontrol et ve', tapToRetry: 'tekrar denemek için dokun',
     onboardStep1: 'ADIM 1 / 2', genderTitle: 'Cinsiyetin nedir?', genderSub: 'Bu, saç stili önerilerini sana göre uyarlamamıza yardımcı olur.', genderMale: 'Erkek', genderFemale: 'Kadın',
     onboardStep2: 'ADIM 2 / 2', dobTitle: 'Doğum tarihin ne zaman?', dobSub: 'Sadece bu cihazda saklanır — hiçbir yere gönderilmez.', continueWord: 'Devam et',
@@ -3920,7 +3947,7 @@ const TRANSLATIONS = {
   },
   az: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Ön fotoşəklinin həqiqi landmark əsaslı skan edilməsi — üz forması, çənə bucağı, simmetriya, üz üçdəbirləri — faktiki ölçülənə uyğun saç düzümləri ilə uzlaşdırılır.',
-    continueGuest: 'Qonaq kimi davam et', guestWord: 'Qonaq', stepFront: 'Ön şəkil', stepSide: 'Yan profil', stepResults: 'Nəticələr', stepExercises: 'Məşqlər',
+    continueGuest: 'Qonaq kimi davam et', guestWord: 'Qonaq', welcomeCancel: '‹ Ləğv et', stepFront: 'Ön şəkil', stepSide: 'Yan profil', stepResults: 'Nəticələr', stepExercises: 'Məşqlər',
     googleSignInError: 'Google ilə Giriş yüklənmədi — bağlantını yoxla və', tapToRetry: 'yenidən cəhd etmək üçün toxun',
     onboardStep1: 'ADDIM 1 / 2', genderTitle: 'Cinsiyyətin nədir?', genderSub: 'Bu, saç düzümü tövsiyələrini sənə uyğunlaşdırmağa kömək edir.', genderMale: 'Kişi', genderFemale: 'Qadın',
     onboardStep2: 'ADDIM 2 / 2', dobTitle: 'Doğum tarixin nə vaxtdır?', dobSub: 'Yalnız bu cihazda saxlanılır — heç yerə göndərilmir.', continueWord: 'Davam et',
@@ -3965,7 +3992,7 @@ const TRANSLATIONS = {
   },
   ru: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Реальный анализ вашей фронтальной фотографии на основе ключевых точек — форма лица, угол челюсти, симметрия, трети лица — сопоставленный с причёсками, которые подходят именно под ваши измерения.',
-    continueGuest: 'Продолжить как гость', guestWord: 'Гость', stepFront: 'Фото анфас', stepSide: 'Боковой профиль', stepResults: 'Результаты', stepExercises: 'Упражнения',
+    continueGuest: 'Продолжить как гость', guestWord: 'Гость', welcomeCancel: '‹ Отмена', stepFront: 'Фото анфас', stepSide: 'Боковой профиль', stepResults: 'Результаты', stepExercises: 'Упражнения',
     googleSignInError: 'Не удалось загрузить вход через Google — проверьте подключение и', tapToRetry: 'нажмите, чтобы повторить',
     onboardStep1: 'ШАГ 1 ИЗ 2', genderTitle: 'Какой у вас пол?', genderSub: 'Это поможет подобрать причёску специально для вас.', genderMale: 'Мужской', genderFemale: 'Женский',
     onboardStep2: 'ШАГ 2 ИЗ 2', dobTitle: 'Когда у вас день рождения?', dobSub: 'Хранится только на этом устройстве — никуда не отправляется.', continueWord: 'Продолжить',
@@ -4010,7 +4037,7 @@ const TRANSLATIONS = {
   },
   de: {
     welcomeTitle: 'Face Scan', welcomeSub: 'Eine echte, landmark-basierte Analyse deines Frontfotos — Gesichtsform, Kieferwinkel, Symmetrie, Gesichtsdrittel — abgeglichen mit Frisuren, die zu den tatsächlich gemessenen Werten passen.',
-    continueGuest: 'Als Gast fortfahren', guestWord: 'Gast', stepFront: 'Frontfoto', stepSide: 'Seitenprofil', stepResults: 'Ergebnisse', stepExercises: 'Übungen',
+    continueGuest: 'Als Gast fortfahren', guestWord: 'Gast', welcomeCancel: '‹ Abbrechen', stepFront: 'Frontfoto', stepSide: 'Seitenprofil', stepResults: 'Ergebnisse', stepExercises: 'Übungen',
     googleSignInError: 'Google-Anmeldung konnte nicht geladen werden — überprüfe deine Verbindung und', tapToRetry: 'zum Wiederholen tippen',
     onboardStep1: 'SCHRITT 1 VON 2', genderTitle: 'Was ist dein Geschlecht?', genderSub: 'Das hilft dabei, Frisurvorschläge auf dich abzustimmen.', genderMale: 'Männlich', genderFemale: 'Weiblich',
     onboardStep2: 'SCHRITT 2 VON 2', dobTitle: 'Wann hast du Geburtstag?', dobSub: 'Wird nur auf diesem Gerät gespeichert — wird nirgendwohin gesendet.', continueWord: 'Weiter',
