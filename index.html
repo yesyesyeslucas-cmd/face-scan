@@ -1476,6 +1476,19 @@ els.authSwitch.addEventListener('click', () => {
   renderAuthBadge();
   showScreen('welcome');
   els.welcomeCancelBtn.style.display = 'block';
+  // Tell Google to forget the remembered session. Without this, its own
+  // personalized button/prompt keeps showing whichever Google account the
+  // browser last used ("Sign in as Tim…") no matter which account someone
+  // actually wants next — this is Google's own remembered-session behavior,
+  // not something our own code was forcing, but the person switching
+  // accounts is exactly the moment that memory should be cleared so the
+  // real account picker (with every signed-in browser account) shows
+  // instead of the same one repeating.
+  try{
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id){
+      google.accounts.id.disableAutoSelect();
+    }
+  }catch(e){}
 });
 
 els.welcomeCancelBtn.addEventListener('click', () => {
