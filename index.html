@@ -1138,6 +1138,20 @@ function renderAuthBadge(){
     els.authAvatar = document.getElementById('authAvatar');
   } else {
     const initial = (currentUser.provider === 'guest' ? 'G' : (currentUser.name || 'U')).trim().charAt(0).toUpperCase();
+    // If the previous user had a Google photo, els.authAvatar is currently
+    // a real <img> element (built by the branch above) whose src still
+    // points at THEIR picture. Setting .textContent on an <img> renders
+    // nothing — images don't display text — so that old photo (or a
+    // broken-image icon once its signed URL expires) stayed attached
+    // underneath instead of actually clearing. This never touches how a
+    // Google account's own photo is shown (the branch above is untouched);
+    // it only rebuilds the fallback-letter avatar properly when switching
+    // AWAY from one, the same way the picture branch already rebuilds
+    // itself as an <img> going the other way.
+    if (els.authAvatar.tagName === 'IMG'){
+      els.authAvatar.outerHTML = `<span class="avatar fallback" id="authAvatar"></span>`;
+      els.authAvatar = document.getElementById('authAvatar');
+    }
     els.authAvatar.textContent = initial;
   }
   els.authBadge.style.display = 'flex';
