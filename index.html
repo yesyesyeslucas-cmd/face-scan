@@ -132,7 +132,7 @@
 
   .auth-badge{ display:none; align-items:center; gap:8px; font-family:'Space Mono', monospace; font-size:10.5px; color:var(--ink-dim); margin-bottom:10px; flex-wrap:wrap; padding-right:76px; }
   .auth-badge .who{ color:var(--signal); }
-  .auth-badge .avatar{ width:18px; height:18px; border-radius:50%; object-fit:cover; border:1px solid var(--signal-dim); }
+  .auth-badge .avatar{ width:18px; height:18px; border-radius:50%; object-fit:cover; border:1px solid var(--signal-dim); background-size:cover; background-position:center; background-repeat:no-repeat; display:inline-block; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
   .auth-badge .avatar.fallback{ display:flex; align-items:center; justify-content:center; background:rgba(34,211,238,0.12); color:var(--signal); font-size:9px; font-weight:700; }
   .auth-badge .switch{ margin-left:auto; text-decoration:underline; text-underline-offset:2px; cursor:pointer; color:var(--ink-dim); }
   .auth-badge .switch:active{ color:var(--signal); }
@@ -1132,26 +1132,22 @@ function renderAuthBadge(){
     return;
   }
   els.authWho.textContent = currentUser.provider === 'guest' ? t('guestWord') : currentUser.name;
+  // The avatar is always a <span> — a real Google photo is applied as a CSS
+  // background-image, never as an <img src>. An <img> is what triggers
+  // Chrome's native long-press "Open image / Copy image / Download image /
+  // Share image" menu; a background-image on a plain element doesn't, so
+  // long-pressing the avatar now does nothing, matching every other small
+  // UI icon in the app. Using one consistent tag for both states also means
+  // there's no img/span swap to keep in sync — switching accounts just
+  // means setting or clearing backgroundImage on the same element.
   if (currentUser.picture){
     els.authAvatar.classList.remove('fallback');
-    els.authAvatar.outerHTML = `<img class="avatar" id="authAvatar" src="${currentUser.picture}" alt="">`;
-    els.authAvatar = document.getElementById('authAvatar');
+    els.authAvatar.style.backgroundImage = `url("${currentUser.picture}")`;
+    els.authAvatar.textContent = '';
   } else {
     const initial = (currentUser.provider === 'guest' ? 'G' : (currentUser.name || 'U')).trim().charAt(0).toUpperCase();
-    // If the previous user had a Google photo, els.authAvatar is currently
-    // a real <img> element (built by the branch above) whose src still
-    // points at THEIR picture. Setting .textContent on an <img> renders
-    // nothing — images don't display text — so that old photo (or a
-    // broken-image icon once its signed URL expires) stayed attached
-    // underneath instead of actually clearing. This never touches how a
-    // Google account's own photo is shown (the branch above is untouched);
-    // it only rebuilds the fallback-letter avatar properly when switching
-    // AWAY from one, the same way the picture branch already rebuilds
-    // itself as an <img> going the other way.
-    if (els.authAvatar.tagName === 'IMG'){
-      els.authAvatar.outerHTML = `<span class="avatar fallback" id="authAvatar"></span>`;
-      els.authAvatar = document.getElementById('authAvatar');
-    }
+    els.authAvatar.classList.add('fallback');
+    els.authAvatar.style.backgroundImage = 'none';
     els.authAvatar.textContent = initial;
   }
   els.authBadge.style.display = 'flex';
