@@ -503,7 +503,17 @@
       callback: (response) => {
         try{
           const payload = JSON.parse(atob(response.credential.split('.')[1]));
-          window.__completeGoogleSignIn({ name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' });
+          // Kept so the web paywall can prove to our server which Google
+          // account is asking (the server re-verifies it with Google).
+          try{ localStorage.setItem('faceScanGoogleIdToken', response.credential); }catch(e){}
+          const signedInUser = { name: payload.name, email: payload.email, picture: payload.picture, provider: 'google' };
+          if (window.__paywallSignInHandler){
+            const handler = window.__paywallSignInHandler;
+            window.__paywallSignInHandler = null;
+            handler(signedInUser);
+          } else {
+            window.__completeGoogleSignIn(signedInUser);
+          }
         }catch(e){
           console.error(e);
         }
@@ -1236,7 +1246,232 @@ const HAIR_PICKS_TRIAL = 2;
 let selectedPlan = 'annual';
 let digitalGoodsService = null;
 
+/* ================================================================
+   WEB BILLING (Paddle) — iPhone / desktop browsers only.
+   Android never uses this: inside the Play app it's Google Play
+   Billing, and Android web visitors are sent to the Play Store.
+   Flow: Google sign-in (ID token) -> our Cloudflare Worker verifies
+   the token with Google and looks up the Paddle subscription for that
+   email -> result cached locally until the billing period ends.
+================================================================ */
+const PADDLE_CLIENT_TOKEN = 'live_9135bf6bd852f88e507c1af285d';
+const PADDLE_PRICE_IDS = {
+  face_scan_monthly: 'pri_01m3ade45ar805b67mbx73pbyb',
+  face_scan_annual: 'pri_01m3adgs05behtww039mew46cy',
+  face_scan_monthly_now: 'pri_01m3adj0y4cb2175fyd8tnh61c',
+  face_scan_annual_now: 'pri_01m3adjre72dm7fvmpdr038fg8',
+};
+const WEB_PRICES_USD = { face_scan_monthly: '10', face_scan_annual: '30', face_scan_monthly_now: '10', face_scan_annual_now: '30' };
+const WEB_STATUS_URL = 'https://facescan-api.sgtim1020.workers.dev/status';
+const PADDLE_LOCALES = { en: 'en', es: 'es', pt: 'pt', tr: 'tr', ru: 'ru', de: 'de', az: 'en' };
+let paddleReady = null;
+
+function isWebBilling(){ return !fsIsAndroid(); }
+function getWebSub(){
+  try{ return JSON.parse(localStorage.getItem('faceScanWebSub') || 'null'); }catch(e){ return null; }
+}
+function setWebSub(sub){
+  try{
+    if (sub) localStorage.setItem('faceScanWebSub', JSON.stringify(sub));
+    else localStorage.removeItem('faceScanWebSub');
+  }catch(e){ /* ignore */ }
+}
+function webSubActive(){
+  const sub = getWebSub();
+  return !!(sub && sub.until && Date.now() < sub.until);
+}
+function decodeJwtPayload(token){
+  const part = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(atob(part + '==='.slice((part.length + 3) % 4)));
+}
+// Returns the saved Google ID token only while it's still valid (they last ~1 hour).
+function getGoogleToken(){
+  let token = null;
+  try{ token = localStorage.getItem('faceScanGoogleIdToken'); }catch(e){ return null; }
+  if (!token) return null;
+  try{
+    const payload = decodeJwtPayload(token);
+    if (!payload.exp || payload.exp * 1000 < Date.now() + 60000) return null;
+  }catch(e){ return null; }
+  return token;
+}
+async function fetchWebStatus(){
+  const token = getGoogleToken();
+  if (!token) return { error: 'no_token' };
+  try{
+    const res = await fetch(WEB_STATUS_URL, { headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!res.ok) return { error: data.error || ('http_' + res.status) };
+    return data;
+  }catch(e){ return { error: 'network' }; }
+}
+// Errors (offline, server down) keep whatever is cached; only a clear
+// answer from the server changes it.
+function applyWebStatus(data){
+  if (!data || data.error) return webSubActive();
+  if (data.status === 'active' || data.status === 'trialing'){
+    const end = data.periodEnd ? Date.parse(data.periodEnd) : (Date.now() + TRIAL_WINDOW_MS);
+    setWebSub({
+      tier: data.status === 'trialing' ? 'trial' : 'full',
+      until: end + 24 * 60 * 60 * 1000, // one day of grace around renewals
+      cancelUrl: data.cancelUrl || null,
+    });
+    return true;
+  }
+  setWebSub(null);
+  return false;
+}
+async function refreshWebEntitlement(){
+  const ok = applyWebStatus(await fetchWebStatus());
+  updateManageLinks();
+  return ok;
+}
+function updateManageLinks(){
+  if (!isWebBilling()) return;
+  const sub = getWebSub();
+  const href = (sub && sub.cancelUrl) || 'https://paddle.net';
+  const manageBtn = document.getElementById('paywallManageBtn');
+  if (manageBtn) manageBtn.href = href;
+  const rowLink = document.querySelector('#exerciseManageRow a');
+  if (rowLink) rowLink.href = href;
+}
+function loadPaddle(){
+  if (paddleReady) return paddleReady;
+  paddleReady = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js';
+    script.onload = () => {
+      try{
+        window.Paddle.Initialize({ token: PADDLE_CLIENT_TOKEN, eventCallback: onPaddleEvent });
+        resolve(window.Paddle);
+      }catch(e){ paddleReady = null; reject(e); }
+    };
+    script.onerror = () => { paddleReady = null; reject(new Error('paddle_load_failed')); };
+    document.head.appendChild(script);
+  });
+  return paddleReady;
+}
+function onPaddleEvent(ev){
+  if (ev && ev.name === 'checkout.completed') activateAfterCheckout();
+}
+// Paddle tells our server about the new subscription within seconds;
+// poll a few times, then unlock in place.
+async function activateAfterCheckout(){
+  const errorEl = document.getElementById('paywallError');
+  if (errorEl){ errorEl.style.display = 'block'; errorEl.textContent = t('webActivating'); }
+  for (let i = 0; i < 8; i++){
+    await new Promise((r) => setTimeout(r, 2500));
+    if (await refreshWebEntitlement()){
+      try{ window.Paddle.Checkout.close(); }catch(e){ /* already closed */ }
+      if (errorEl) errorEl.style.display = 'none';
+      closePaywallOverlay();
+      onPremiumUnlocked();
+      return;
+    }
+  }
+  if (errorEl) errorEl.textContent = t('webActivateDelay');
+}
+function ensureGoogleLibrary(cb, tries){
+  tries = tries || 0;
+  if (window.google && google.accounts && google.accounts.id) return cb();
+  if (tries === 0 && window.__renderGoogleBtn) window.__renderGoogleBtn();
+  if (tries > 40) return;
+  setTimeout(() => ensureGoogleLibrary(cb, tries + 1), 250);
+}
+function renderWebSignIn(){
+  const cardsEl = document.getElementById('planCards');
+  const continueBtn = document.getElementById('paywallContinueBtn');
+  const toggleRow = document.getElementById('trialToggleRow');
+  if (continueBtn) continueBtn.style.display = 'none';
+  if (toggleRow) toggleRow.style.display = 'none';
+  cardsEl.innerHTML = '';
+  const note = document.createElement('div');
+  note.style.cssText = 'text-align:center; padding:18px 4px 12px; font-size:13px; color:var(--ink-dim); line-height:1.55;';
+  note.textContent = t('webSignInRequired');
+  const btnHost = document.createElement('div');
+  btnHost.id = 'paywallGoogleBtn';
+  btnHost.style.cssText = 'display:flex; justify-content:center; padding-bottom:6px;';
+  cardsEl.appendChild(note);
+  cardsEl.appendChild(btnHost);
+  window.__paywallSignInHandler = (user) => {
+    currentUser = user;
+    saveUserToStorage(user);
+    renderAuthBadge();
+    openWebPaywall();
+  };
+  ensureGoogleLibrary(() => {
+    try{
+      google.accounts.id.renderButton(btnHost, { theme: 'filled_white', size: 'large', shape: 'pill', width: 260, text: 'continue_with' });
+    }catch(e){ console.error(e); }
+  });
+}
+async function openWebPaywall(){
+  const cardsEl = document.getElementById('planCards');
+  const continueBtn = document.getElementById('paywallContinueBtn');
+  const errorEl = document.getElementById('paywallError');
+  const toggleRow = document.getElementById('trialToggleRow');
+  const disclosure = els.paywall.querySelector('[data-i18n="autoRenewDisclosure"]');
+  if (disclosure) disclosure.textContent = t('webDisclosure');
+  // The trial description's last sentence is about cancelling in the Play
+  // Store — drop it on the web, where cancelling works through Paddle.
+  const trialDesc = els.paywall.querySelector('[data-i18n="paywallTrialDesc"]');
+  if (trialDesc){
+    const full = t('paywallTrialDesc');
+    const cut = full.lastIndexOf('. ', full.length - 2);
+    trialDesc.textContent = cut > 0 ? full.slice(0, cut + 1) : full;
+  }
+  updateManageLinks();
+  if (!getGoogleToken()){ renderWebSignIn(); return; }
+
+  cardsEl.innerHTML = `<div style="text-align:center; padding:30px 0; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim);">${t('loadingPlans')}</div>`;
+  const hasSub = await refreshWebEntitlement();
+  if (hasSub && isFullPremiumActive()){
+    closePaywallOverlay();
+    onPremiumUnlocked();
+    return;
+  }
+  if (hasSub){
+    // Trial users can't buy a second subscription — explain what unlocks when.
+    onPremiumUnlocked();
+    cardsEl.innerHTML = '';
+    if (errorEl){ errorEl.style.display = 'block'; errorEl.textContent = t('webTrialNote'); }
+    return;
+  }
+  planDetailsBySku = {};
+  Object.keys(PADDLE_PRICE_IDS).forEach((sku) => {
+    planDetailsBySku[sku] = {
+      itemId: sku,
+      price: { currency: 'USD', value: WEB_PRICES_USD[sku] },
+      freeTrialPeriod: /_now$/.test(sku) ? '' : 'P7D',
+    };
+  });
+  toggleRow.style.display = 'block';
+  renderPlanCards();
+  continueBtn.style.display = 'block';
+}
+async function startWebCheckout(){
+  const errorEl = document.getElementById('paywallError');
+  const token = getGoogleToken();
+  if (!token){ renderWebSignIn(); return; }
+  let email = '';
+  try{ email = String(decodeJwtPayload(token).email || '').toLowerCase(); }catch(e){ /* ignore */ }
+  try{
+    const paddle = await loadPaddle();
+    paddle.Checkout.open({
+      items: [{ priceId: PADDLE_PRICE_IDS[currentSku(selectedPlan)], quantity: 1 }],
+      customer: email ? { email } : undefined,
+      customData: { google_email: email },
+      settings: { displayMode: 'overlay', theme: 'dark', locale: PADDLE_LOCALES[currentLang] || 'en', allowLogout: false },
+    });
+  }catch(e){
+    console.error('Paddle checkout failed', e);
+    errorEl.style.display = 'block';
+    errorEl.textContent = t('purchaseNotCompleted');
+  }
+}
+
 function isPremiumActive(){
+  if (isWebBilling()) return webSubActive();
   return localStorage.getItem(SUBSCRIPTION_STORAGE_KEY) === '1';
 }
 
@@ -1248,6 +1483,10 @@ function isPremiumActive(){
 // activation is a reliable local signal that this is a real paid period,
 // without needing a server to check trial status directly.
 function isInTrialWindow(){
+  if (isWebBilling()){
+    const webSub = getWebSub();
+    return !!(webSub && webSubActive() && webSub.tier === 'trial');
+  }
   if (!isPremiumActive()) return false;
   if (localStorage.getItem(SUBSCRIPTION_NO_TRIAL_KEY) === '1') return false; // paid in full upfront, no trial to wait out
   const since = Number(localStorage.getItem(SUBSCRIPTION_SINCE_KEY) || 0);
@@ -1294,6 +1533,7 @@ async function openPaywallOverlay(){
   if (errorEl) errorEl.style.display = 'none';
   if (continueBtn) continueBtn.style.display = 'none';
   if (cardsEl) cardsEl.innerHTML = `<div style="text-align:center; padding:30px 0; font-family:'Space Mono',monospace; font-size:12px; color:var(--ink-dim);" id="planLoading">${t('loadingPlans')}</div>`;
+  if (isWebBilling()){ openWebPaywall(); return; }
   const service = await getDigitalGoods();
   if (!service){
     const stillLoading = document.getElementById('planLoading');
@@ -1367,6 +1607,16 @@ async function showPaywallOrApp(){
   // features unlock immediately if they do.
   els.paywall.style.display = 'none';
   showScreen('front');
+  // Let the rest of the script finish initializing before any of the
+  // subscription constants below are touched.
+  await null;
+  if (SUBSCRIPTIONS_ENABLED && isWebBilling()){
+    updateManageLinks();
+    const before = isPremiumActive() + '|' + isFullPremiumActive();
+    if (getGoogleToken()) await refreshWebEntitlement();
+    if (before !== isPremiumActive() + '|' + isFullPremiumActive()) onPremiumUnlocked();
+    return;
+  }
   if (SUBSCRIPTIONS_ENABLED){
     const service = await getDigitalGoods();
     await checkEntitlement(service);
@@ -1461,6 +1711,7 @@ document.getElementById('paywallCloseBtn').addEventListener('click', closePaywal
 document.getElementById('paywallContinueBtn').addEventListener('click', async () => {
   const errorEl = document.getElementById('paywallError');
   errorEl.style.display = 'none';
+  if (isWebBilling()){ startWebCheckout(); return; }
   try{
     const paymentMethod = 'https://play.google.com/billing';
     const request = new PaymentRequest(
@@ -1481,6 +1732,19 @@ document.getElementById('paywallContinueBtn').addEventListener('click', async ()
 });
 
 document.getElementById('paywallRestoreBtn').addEventListener('click', async () => {
+  if (isWebBilling()){
+    const errBox = document.getElementById('paywallError');
+    errBox.style.display = 'none';
+    if (!getGoogleToken()){ renderWebSignIn(); return; }
+    if (await refreshWebEntitlement()){
+      closePaywallOverlay();
+      onPremiumUnlocked();
+    } else {
+      errBox.style.display = 'block';
+      errBox.textContent = t('noActiveSubFound');
+    }
+    return;
+  }
   const service = await getDigitalGoods();
   const entitled = await checkEntitlement(service);
   const errorEl = document.getElementById('paywallError');
@@ -3851,7 +4115,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Unlock Face Scan', paywallTrialDesc: "Your 7-day free trial includes 2 hairstyle picks for your shape. Side Profile analysis and the full 90-day exercise plan unlock once your subscription moves past the trial. Cancel anytime in Play Store before it ends and you won't be charged.",
     welcomeSplashText: 'Welcome', loadingPlans: 'Loading plans…', startFreeTrial: 'Start Free Trial', continueToPayment: 'Continue', restorePurchase: 'Restore Purchase', manageCancelSubscription: 'Manage / Cancel Subscription',
     autoRenewDisclosure: 'Subscriptions auto-renew at the price shown unless canceled at least 24 hours before the trial or billing period ends. Use "Manage / Cancel Subscription" above, or your Google Play account\'s Subscriptions page, at any time.',
-    subsOnlyOnPlay: 'Subscriptions are only available when the app is installed from Google Play.', iosInAppTitle: "Open in Safari", iosInAppBody: "For the camera and Google sign-in to work, open FaceScan in Safari: tap ••• or the share icon, then \"Open in browser\".", iosOpenSafari: "Open in Safari", iosA2hsTitle: "Add FaceScan to your Home Screen", iosA2hsBody: "Tap the Share button {share} in Safari, then \"Add to Home Screen\". It opens full screen, like an app.", bannerDismiss: "Not now", subsIosSoon: "Premium on iPhone is coming soon. Meanwhile, all free features work right here in Safari.", playTitle: "Get the FaceScan app", playBody: "Install FaceScan from Google Play for the full-screen app and Premium.", playBtn: "Get it on Google Play", plansLoadError: "Couldn't load subscription plans — check your connection, or the subscription products may not be set up yet in Play Console.",
+    subsOnlyOnPlay: 'Subscriptions are only available when the app is installed from Google Play.', iosInAppTitle: "Open in Safari", iosInAppBody: "For the camera and Google sign-in to work, open FaceScan in Safari: tap ••• or the share icon, then \"Open in browser\".", iosOpenSafari: "Open in Safari", iosA2hsTitle: "Add FaceScan to your Home Screen", iosA2hsBody: "Tap the Share button {share} in Safari, then \"Add to Home Screen\". It opens full screen, like an app.", bannerDismiss: "Not now", subsIosSoon: "Premium on iPhone is coming soon. Meanwhile, all free features work right here in Safari.", playTitle: "Get the FaceScan app", playBody: "Install FaceScan from Google Play for the full-screen app and Premium.", playBtn: "Get it on Google Play", webSignInRequired: "Sign in with Google to subscribe. Premium is linked to your Google account, so you can restore it on any device.", webActivating: "Payment received — activating Premium…", webActivateDelay: "Payment received. Premium can take a minute to activate — tap \"Restore Purchase\" shortly.", webTrialNote: "You're on the 7-day free trial. Side Profile, the full hairstyle guide and the 90-day plan unlock when your first payment goes through at the end of the trial.", webDisclosure: "Subscriptions auto-renew at the price shown unless canceled before the trial or billing period ends. Payments are processed by our reseller Paddle.com. Cancel anytime with \"Manage / Cancel Subscription\" above or the link in your receipt email.", plansLoadError: "Couldn't load subscription plans — check your connection, or the subscription products may not be set up yet in Play Console.",
     purchaseNotCompleted: 'Purchase was not completed. You can try again anytime.', noActiveSubFound: 'No active subscription found on this Google account.',
     planAnnual: 'Annual', planMonthly: 'Monthly', bestValue: 'BEST VALUE', perYear: '/year', perMonth: '/month', autoRenewsCancelAnytime: 'auto-renews, cancel anytime', trialPrefix: '7-day free trial, then ', startWithTrial: 'Free trial', payNowSkipTrial: 'Pay now',
     closeWord: 'Close', markDayComplete: 'Mark Day Complete', backToResults: '← Back to results',
@@ -3896,7 +4160,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Desbloquear Face Scan', paywallTrialDesc: 'Tu prueba gratuita de 7 días incluye 2 sugerencias de peinado para tu forma. El análisis de perfil lateral y el plan completo de ejercicios de 90 días se desbloquean cuando tu suscripción pasa de la prueba al período de pago. Cancela cuando quieras en Play Store antes de que termine y no se te cobrará.',
     welcomeSplashText: 'Bienvenido', loadingPlans: 'Cargando planes…', startFreeTrial: 'Iniciar prueba gratuita', continueToPayment: 'Continuar', restorePurchase: 'Restaurar compra', manageCancelSubscription: 'Gestionar / Cancelar suscripción',
     autoRenewDisclosure: 'Las suscripciones se renuevan automáticamente al precio mostrado a menos que se cancelen al menos 24 horas antes de que termine la prueba o el período de facturación. Usa "Gestionar / Cancelar suscripción" arriba, o la página de Suscripciones de tu cuenta de Google Play, en cualquier momento.',
-    subsOnlyOnPlay: 'Las suscripciones solo están disponibles cuando la app está instalada desde Google Play.', iosInAppTitle: "Ábrelo en Safari", iosInAppBody: "Para que funcionen la cámara y el inicio de sesión con Google, abre FaceScan en Safari: toca ••• o el ícono de compartir y luego \"Abrir en el navegador\".", iosOpenSafari: "Abrir en Safari", iosA2hsTitle: "Agrega FaceScan a tu pantalla de inicio", iosA2hsBody: "Toca el botón Compartir {share} en Safari y luego \"Agregar a pantalla de inicio\". Se abrirá en pantalla completa, como una app.", bannerDismiss: "Ahora no", subsIosSoon: "Premium para iPhone llegará pronto. Mientras tanto, todas las funciones gratuitas funcionan aquí en Safari.", playTitle: "Descarga la app FaceScan", playBody: "Instala FaceScan desde Google Play para tener la app a pantalla completa y Premium.", playBtn: "Descargar en Google Play", plansLoadError: 'No se pudieron cargar los planes de suscripción — comprueba tu conexión, o los productos de suscripción pueden no estar configurados aún en Play Console.',
+    subsOnlyOnPlay: 'Las suscripciones solo están disponibles cuando la app está instalada desde Google Play.', iosInAppTitle: "Ábrelo en Safari", iosInAppBody: "Para que funcionen la cámara y el inicio de sesión con Google, abre FaceScan en Safari: toca ••• o el ícono de compartir y luego \"Abrir en el navegador\".", iosOpenSafari: "Abrir en Safari", iosA2hsTitle: "Agrega FaceScan a tu pantalla de inicio", iosA2hsBody: "Toca el botón Compartir {share} en Safari y luego \"Agregar a pantalla de inicio\". Se abrirá en pantalla completa, como una app.", bannerDismiss: "Ahora no", subsIosSoon: "Premium para iPhone llegará pronto. Mientras tanto, todas las funciones gratuitas funcionan aquí en Safari.", playTitle: "Descarga la app FaceScan", playBody: "Instala FaceScan desde Google Play para tener la app a pantalla completa y Premium.", playBtn: "Descargar en Google Play", webSignInRequired: "Inicia sesión con Google para suscribirte. Premium queda vinculado a tu cuenta de Google, así puedes restaurarlo en cualquier dispositivo.", webActivating: "Pago recibido — activando Premium…", webActivateDelay: "Pago recibido. Premium puede tardar un minuto en activarse — toca \"Restaurar compra\" en un momento.", webTrialNote: "Estás en la prueba gratuita de 7 días. El perfil lateral, la guía completa de peinados y el plan de 90 días se desbloquean cuando se procese tu primer pago al final de la prueba.", webDisclosure: "Las suscripciones se renuevan automáticamente al precio mostrado salvo que se cancelen antes de que termine la prueba o el período de facturación. Los pagos los procesa nuestro revendedor Paddle.com. Cancela cuando quieras con \"Gestionar / Cancelar suscripción\" arriba o con el enlace de tu correo de recibo.", plansLoadError: 'No se pudieron cargar los planes de suscripción — comprueba tu conexión, o los productos de suscripción pueden no estar configurados aún en Play Console.',
     purchaseNotCompleted: 'La compra no se completó. Puedes intentarlo de nuevo cuando quieras.', noActiveSubFound: 'No se encontró ninguna suscripción activa en esta cuenta de Google.',
     planAnnual: 'Anual', planMonthly: 'Mensual', bestValue: 'MEJOR VALOR', perYear: '/año', perMonth: '/mes', autoRenewsCancelAnytime: 'se renueva automáticamente, cancela cuando quieras', trialPrefix: 'Prueba gratuita de 7 días, luego ', startWithTrial: 'Prueba gratis', payNowSkipTrial: 'Pagar ahora',
     closeWord: 'Cerrar', markDayComplete: 'Marcar día como completado', backToResults: '← Volver a los resultados',
@@ -3945,7 +4209,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Desbloquear Face Scan', paywallTrialDesc: 'Seu teste gratuito de 7 dias inclui 2 sugestões de penteado para seu formato. A análise de perfil lateral e o plano completo de 90 dias de exercícios são desbloqueados quando sua assinatura passa do teste para o período pago. Cancele quando quiser no Play Store antes que termine e você não será cobrado.',
     welcomeSplashText: 'Bem-vindo', loadingPlans: 'Carregando planos…', startFreeTrial: 'Iniciar teste gratuito', continueToPayment: 'Continuar', restorePurchase: 'Restaurar compra', manageCancelSubscription: 'Gerenciar / Cancelar assinatura',
     autoRenewDisclosure: 'As assinaturas renovam automaticamente pelo preço exibido, a menos que sejam canceladas com pelo menos 24 horas de antecedência do fim do teste ou do período de faturamento. Use "Gerenciar / Cancelar assinatura" acima, ou a página de Assinaturas da sua conta do Google Play, a qualquer momento.',
-    subsOnlyOnPlay: 'As assinaturas só estão disponíveis quando o app é instalado a partir do Google Play.', iosInAppTitle: "Abra no Safari", iosInAppBody: "Para a câmera e o login com Google funcionarem, abra o FaceScan no Safari: toque em ••• ou no ícone de compartilhar e depois em \"Abrir no navegador\".", iosOpenSafari: "Abrir no Safari", iosA2hsTitle: "Adicione o FaceScan à Tela de Início", iosA2hsBody: "Toque no botão Compartilhar {share} no Safari e depois em \"Adicionar à Tela de Início\". Ele abre em tela cheia, como um app.", bannerDismiss: "Agora não", subsIosSoon: "O Premium para iPhone chega em breve. Enquanto isso, todos os recursos gratuitos funcionam aqui no Safari.", playTitle: "Baixe o app FaceScan", playBody: "Instale o FaceScan pelo Google Play para ter o app em tela cheia e o Premium.", playBtn: "Baixar no Google Play", plansLoadError: 'Não foi possível carregar os planos de assinatura — verifique sua conexão, ou os produtos de assinatura podem ainda não estar configurados no Play Console.',
+    subsOnlyOnPlay: 'As assinaturas só estão disponíveis quando o app é instalado a partir do Google Play.', iosInAppTitle: "Abra no Safari", iosInAppBody: "Para a câmera e o login com Google funcionarem, abra o FaceScan no Safari: toque em ••• ou no ícone de compartilhar e depois em \"Abrir no navegador\".", iosOpenSafari: "Abrir no Safari", iosA2hsTitle: "Adicione o FaceScan à Tela de Início", iosA2hsBody: "Toque no botão Compartilhar {share} no Safari e depois em \"Adicionar à Tela de Início\". Ele abre em tela cheia, como um app.", bannerDismiss: "Agora não", subsIosSoon: "O Premium para iPhone chega em breve. Enquanto isso, todos os recursos gratuitos funcionam aqui no Safari.", playTitle: "Baixe o app FaceScan", playBody: "Instale o FaceScan pelo Google Play para ter o app em tela cheia e o Premium.", playBtn: "Baixar no Google Play", webSignInRequired: "Entre com o Google para assinar. O Premium fica vinculado à sua conta Google, então você pode restaurá-lo em qualquer dispositivo.", webActivating: "Pagamento recebido — ativando o Premium…", webActivateDelay: "Pagamento recebido. O Premium pode levar um minuto para ativar — toque em \"Restaurar compra\" daqui a pouco.", webTrialNote: "Você está no teste grátis de 7 dias. O perfil lateral, o guia completo de penteados e o plano de 90 dias são liberados quando o primeiro pagamento for processado no fim do teste.", webDisclosure: "As assinaturas são renovadas automaticamente pelo preço mostrado, a menos que sejam canceladas antes do fim do teste ou do período de cobrança. Os pagamentos são processados pelo nosso revendedor Paddle.com. Cancele quando quiser em \"Gerenciar / Cancelar assinatura\" acima ou pelo link no e-mail do recibo.", plansLoadError: 'Não foi possível carregar os planos de assinatura — verifique sua conexão, ou os produtos de assinatura podem ainda não estar configurados no Play Console.',
     purchaseNotCompleted: 'A compra não foi concluída. Você pode tentar novamente quando quiser.', noActiveSubFound: 'Nenhuma assinatura ativa encontrada nesta conta do Google.',
     planAnnual: 'Anual', planMonthly: 'Mensal', bestValue: 'MELHOR VALOR', perYear: '/ano', perMonth: '/mês', autoRenewsCancelAnytime: 'renova automaticamente, cancele quando quiser', trialPrefix: 'Teste gratuito de 7 dias, depois ', startWithTrial: 'Teste grátis', payNowSkipTrial: 'Pagar agora',
     closeWord: 'Fechar', markDayComplete: 'Marcar dia como concluído', backToResults: '← Voltar aos resultados',
@@ -3990,7 +4254,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Face Scan\'ı Aç', paywallTrialDesc: '7 günlük ücretsiz deneme sürene, yüz şekline özel 2 saç stili önerisi dahildir. Yan Profil analizi ve 90 günlük egzersiz planının tamamı, aboneliğin deneme süresini geçip ücretli döneme girmesiyle açılır. Play Store\'dan istediğin zaman iptal edebilirsin, deneme bitmeden iptal edersen ücret yansıtılmaz.',
     welcomeSplashText: 'Hoş Geldiniz', loadingPlans: 'Planlar yükleniyor…', startFreeTrial: 'Ücretsiz Denemeyi Başlat', continueToPayment: 'Devam Et', restorePurchase: 'Satın Almayı Geri Yükle', manageCancelSubscription: 'Aboneliği Yönet / İptal Et',
     autoRenewDisclosure: 'Abonelikler, deneme süresi veya faturalandırma dönemi bitmeden en az 24 saat önce iptal edilmedikçe gösterilen fiyattan otomatik olarak yenilenir. İstediğin zaman yukarıdaki "Aboneliği Yönet / İptal Et" butonunu ya da Google Play hesabındaki Abonelikler sayfasını kullanabilirsin.',
-    subsOnlyOnPlay: 'Abonelikler yalnızca uygulama Google Play üzerinden yüklendiğinde kullanılabilir.', iosInAppTitle: "Safari'de aç", iosInAppBody: "Kamera ve Google ile giriş çalışsın diye FaceScan'i Safari'de aç: ••• veya paylaş simgesine dokun, sonra \"Tarayıcıda aç\"ı seç.", iosOpenSafari: "Safari'de aç", iosA2hsTitle: "FaceScan'i Ana Ekrana ekle", iosA2hsBody: "Safari'deki Paylaş {share} butonuna dokun, sonra \"Ana Ekrana Ekle\"yi seç. Uygulama gibi tam ekran açılır.", bannerDismiss: "Şimdi değil", subsIosSoon: "iPhone için Premium çok yakında. Bu arada tüm ücretsiz özellikler burada, Safari'de çalışıyor.", playTitle: "FaceScan uygulamasını indir", playBody: "Tam ekran uygulama ve Premium için FaceScan'i Google Play'den yükle.", playBtn: "Google Play'den indir", plansLoadError: 'Abonelik planları yüklenemedi — bağlantını kontrol et, ya da abonelik ürünleri henüz Play Console\'da ayarlanmamış olabilir.',
+    subsOnlyOnPlay: 'Abonelikler yalnızca uygulama Google Play üzerinden yüklendiğinde kullanılabilir.', iosInAppTitle: "Safari'de aç", iosInAppBody: "Kamera ve Google ile giriş çalışsın diye FaceScan'i Safari'de aç: ••• veya paylaş simgesine dokun, sonra \"Tarayıcıda aç\"ı seç.", iosOpenSafari: "Safari'de aç", iosA2hsTitle: "FaceScan'i Ana Ekrana ekle", iosA2hsBody: "Safari'deki Paylaş {share} butonuna dokun, sonra \"Ana Ekrana Ekle\"yi seç. Uygulama gibi tam ekran açılır.", bannerDismiss: "Şimdi değil", subsIosSoon: "iPhone için Premium çok yakında. Bu arada tüm ücretsiz özellikler burada, Safari'de çalışıyor.", playTitle: "FaceScan uygulamasını indir", playBody: "Tam ekran uygulama ve Premium için FaceScan'i Google Play'den yükle.", playBtn: "Google Play'den indir", webSignInRequired: "Abone olmak için Google ile giriş yap. Premium Google hesabına bağlanır, böylece istediğin cihazda geri yükleyebilirsin.", webActivating: "Ödeme alındı — Premium etkinleştiriliyor…", webActivateDelay: "Ödeme alındı. Premium'un açılması bir dakika sürebilir — birazdan \"Satın Almayı Geri Yükle\" düğmesine dokun.", webTrialNote: "7 günlük ücretsiz denemedesin. Yan profil, tam saç stili rehberi ve 90 günlük plan, deneme sonunda ilk ödemen alındığında açılır.", webDisclosure: "Abonelikler, deneme veya fatura dönemi bitmeden iptal edilmezse gösterilen fiyattan otomatik yenilenir. Ödemeler satıcı ortağımız Paddle.com tarafından işlenir. İstediğin zaman yukarıdaki \"Aboneliği Yönet / İptal Et\" ile veya makbuz e-postandaki bağlantıdan iptal edebilirsin.", plansLoadError: 'Abonelik planları yüklenemedi — bağlantını kontrol et, ya da abonelik ürünleri henüz Play Console\'da ayarlanmamış olabilir.',
     purchaseNotCompleted: 'Satın alma tamamlanmadı. İstediğin zaman tekrar deneyebilirsin.', noActiveSubFound: 'Bu Google hesabında aktif bir abonelik bulunamadı.',
     planAnnual: 'Yıllık', planMonthly: 'Aylık', bestValue: 'EN İYİ DEĞER', perYear: '/yıl', perMonth: '/ay', autoRenewsCancelAnytime: 'otomatik yenilenir, istediğin zaman iptal et', trialPrefix: '7 gün ücretsiz deneme, sonra ', startWithTrial: 'Ücretsiz deneme', payNowSkipTrial: 'Hemen öde',
     closeWord: 'Kapat', markDayComplete: 'Günü Tamamlandı Olarak İşaretle', backToResults: '← Sonuçlara dön',
@@ -4035,7 +4299,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Face Scan-ı Aç', paywallTrialDesc: '7 günlük pulsuz sınaq müddətinə üz formana uyğun 2 saç düzümü təklifi daxildir. Yan Profil analizi və tam 90 günlük məşq planı, abunəliyin sınaq müddətini keçib ödənişli dövrə daxil olmasıyla açılır. Play Store-dan istənilən vaxt ləğv edə bilərsən, sınaq bitmədən ləğv etsən ödəniş alınmır.',
     welcomeSplashText: 'Xoş Gəlmisiniz', loadingPlans: 'Planlar yüklənir…', startFreeTrial: 'Pulsuz Sınağı Başlat', continueToPayment: 'Davam et', restorePurchase: 'Satınalmanı Bərpa Et', manageCancelSubscription: 'Abunəliyi İdarə Et / Ləğv Et',
     autoRenewDisclosure: 'Abunəliklər, sınaq müddəti və ya hesablaşma dövrü bitməzdən ən azı 24 saat əvvəl ləğv edilmədiyi təqdirdə göstərilən qiymətdən avtomatik yenilənir. İstənilən vaxt yuxarıdakı "Abunəliyi İdarə Et / Ləğv Et" düyməsini, ya da Google Play hesabındakı Abunəliklər səhifəsini istifadə edə bilərsən.',
-    subsOnlyOnPlay: 'Abunəliklər yalnız tətbiq Google Play vasitəsilə yükləndikdə mövcuddur.', iosInAppTitle: "Safari-də aç", iosInAppBody: "Kamera və Google ilə giriş işləsin deyə FaceScan-i Safari-də aç: ••• və ya paylaş işarəsinə toxun, sonra \"Brauzerdə aç\" seç.", iosOpenSafari: "Safari-də aç", iosA2hsTitle: "FaceScan-i Əsas ekrana əlavə et", iosA2hsBody: "Safari-də Paylaş {share} düyməsinə toxun, sonra \"Əsas ekrana əlavə et\" seç. Tətbiq kimi tam ekranda açılır.", bannerDismiss: "İndi yox", subsIosSoon: "iPhone üçün Premium tezliklə gəlir. Hələlik bütün pulsuz funksiyalar burada, Safari-də işləyir.", playTitle: "FaceScan tətbiqini yüklə", playBody: "Tam ekran tətbiq və Premium üçün FaceScan-i Google Play-dən yüklə.", playBtn: "Google Play-dən yüklə", plansLoadError: 'Abunəlik planları yüklənə bilmədi — bağlantını yoxla, ya da abunəlik məhsulları hələ Play Console-da qurulmayıb.',
+    subsOnlyOnPlay: 'Abunəliklər yalnız tətbiq Google Play vasitəsilə yükləndikdə mövcuddur.', iosInAppTitle: "Safari-də aç", iosInAppBody: "Kamera və Google ilə giriş işləsin deyə FaceScan-i Safari-də aç: ••• və ya paylaş işarəsinə toxun, sonra \"Brauzerdə aç\" seç.", iosOpenSafari: "Safari-də aç", iosA2hsTitle: "FaceScan-i Əsas ekrana əlavə et", iosA2hsBody: "Safari-də Paylaş {share} düyməsinə toxun, sonra \"Əsas ekrana əlavə et\" seç. Tətbiq kimi tam ekranda açılır.", bannerDismiss: "İndi yox", subsIosSoon: "iPhone üçün Premium tezliklə gəlir. Hələlik bütün pulsuz funksiyalar burada, Safari-də işləyir.", playTitle: "FaceScan tətbiqini yüklə", playBody: "Tam ekran tətbiq və Premium üçün FaceScan-i Google Play-dən yüklə.", playBtn: "Google Play-dən yüklə", webSignInRequired: "Abunə olmaq üçün Google ilə daxil ol. Premium Google hesabına bağlanır, beləliklə istənilən cihazda bərpa edə bilərsən.", webActivating: "Ödəniş alındı — Premium aktivləşdirilir…", webActivateDelay: "Ödəniş alındı. Premium-un aktivləşməsi bir dəqiqə çəkə bilər — bir azdan \"Satınalmanı Bərpa Et\" düyməsinə toxun.", webTrialNote: "7 günlük pulsuz sınaq dövründəsən. Yan profil, tam saç düzümü bələdçisi və 90 günlük plan sınağın sonunda ilk ödənişin alındıqda açılır.", webDisclosure: "Abunəliklər sınaq və ya ödəniş dövrü bitməzdən əvvəl ləğv edilməsə, göstərilən qiymətlə avtomatik yenilənir. Ödənişlər satış tərəfdaşımız Paddle.com tərəfindən emal olunur. İstənilən vaxt yuxarıdakı \"Abunəliyi İdarə Et / Ləğv Et\" ilə və ya qəbz e-poçtundakı keçidlə ləğv edə bilərsən.", plansLoadError: 'Abunəlik planları yüklənə bilmədi — bağlantını yoxla, ya da abunəlik məhsulları hələ Play Console-da qurulmayıb.',
     purchaseNotCompleted: 'Satınalma tamamlanmadı. İstənilən vaxt yenidən cəhd edə bilərsən.', noActiveSubFound: 'Bu Google hesabında aktiv abunəlik tapılmadı.',
     planAnnual: 'İllik', planMonthly: 'Aylıq', bestValue: 'ƏN YAXŞI DƏYƏR', perYear: '/il', perMonth: '/ay', autoRenewsCancelAnytime: 'avtomatik yenilənir, istənilən vaxt ləğv et', trialPrefix: '7 gün pulsuz sınaq, sonra ', startWithTrial: 'Pulsuz sınaq', payNowSkipTrial: 'İndi ödə',
     closeWord: 'Bağla', markDayComplete: 'Günü Tamamlandı Kimi İşarələ', backToResults: '← Nəticələrə qayıt',
@@ -4080,7 +4344,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Открыть Face Scan', paywallTrialDesc: 'Ваш 7-дневный бесплатный пробный период включает 2 рекомендации причёски для вашей формы лица. Анализ бокового профиля и полный 90-дневный план упражнений открываются, когда подписка переходит из пробного периода в платный. Отмените в любой момент в Play Store до окончания периода, и с вас не спишут деньги.',
     welcomeSplashText: 'Добро пожаловать', loadingPlans: 'Загрузка планов…', startFreeTrial: 'Начать бесплатный период', continueToPayment: 'Продолжить', restorePurchase: 'Восстановить покупку', manageCancelSubscription: 'Управление / Отмена подписки',
     autoRenewDisclosure: 'Подписки автоматически продлеваются по указанной цене, если не отменены как минимум за 24 часа до окончания пробного периода или периода оплаты. Используйте кнопку «Управление / Отмена подписки» выше или страницу подписок вашего аккаунта Google Play в любое время.',
-    subsOnlyOnPlay: 'Подписки доступны только если приложение установлено из Google Play.', iosInAppTitle: "Откройте в Safari", iosInAppBody: "Чтобы работали камера и вход через Google, откройте FaceScan в Safari: нажмите ••• или значок «Поделиться», затем «Открыть в браузере».", iosOpenSafari: "Открыть в Safari", iosA2hsTitle: "Добавьте FaceScan на экран «Домой»", iosA2hsBody: "Нажмите «Поделиться» {share} в Safari, затем «На экран „Домой“». Приложение откроется на весь экран.", bannerDismiss: "Не сейчас", subsIosSoon: "Premium для iPhone скоро появится. А пока все бесплатные функции работают здесь, в Safari.", playTitle: "Скачайте приложение FaceScan", playBody: "Установите FaceScan из Google Play, чтобы получить полноэкранное приложение и Premium.", playBtn: "Скачать в Google Play", plansLoadError: 'Не удалось загрузить планы подписки — проверьте подключение, либо продукты подписки ещё не настроены в Play Console.',
+    subsOnlyOnPlay: 'Подписки доступны только если приложение установлено из Google Play.', iosInAppTitle: "Откройте в Safari", iosInAppBody: "Чтобы работали камера и вход через Google, откройте FaceScan в Safari: нажмите ••• или значок «Поделиться», затем «Открыть в браузере».", iosOpenSafari: "Открыть в Safari", iosA2hsTitle: "Добавьте FaceScan на экран «Домой»", iosA2hsBody: "Нажмите «Поделиться» {share} в Safari, затем «На экран „Домой“». Приложение откроется на весь экран.", bannerDismiss: "Не сейчас", subsIosSoon: "Premium для iPhone скоро появится. А пока все бесплатные функции работают здесь, в Safari.", playTitle: "Скачайте приложение FaceScan", playBody: "Установите FaceScan из Google Play, чтобы получить полноэкранное приложение и Premium.", playBtn: "Скачать в Google Play", webSignInRequired: "Войдите через Google, чтобы оформить подписку. Premium привязывается к вашему аккаунту Google, поэтому его можно восстановить на любом устройстве.", webActivating: "Оплата получена — активируем Premium…", webActivateDelay: "Оплата получена. Активация Premium может занять минуту — чуть позже нажмите «Восстановить покупку».", webTrialNote: "У вас 7-дневный бесплатный пробный период. Профиль сбоку, полный гид по причёскам и 90-дневный план откроются, когда пройдёт первый платёж в конце пробного периода.", webDisclosure: "Подписка продлевается автоматически по указанной цене, если не отменить её до окончания пробного или расчётного периода. Платежи обрабатывает наш реселлер Paddle.com. Отменить можно в любой момент через «Управление / Отмена подписки» выше или по ссылке в письме с чеком.", plansLoadError: 'Не удалось загрузить планы подписки — проверьте подключение, либо продукты подписки ещё не настроены в Play Console.',
     purchaseNotCompleted: 'Покупка не была завершена. Вы можете попробовать снова в любое время.', noActiveSubFound: 'На этом аккаунте Google не найдено активной подписки.',
     planAnnual: 'Годовая', planMonthly: 'Месячная', bestValue: 'ЛУЧШАЯ ЦЕНА', perYear: '/год', perMonth: '/месяц', autoRenewsCancelAnytime: 'автопродление, отмена в любое время', trialPrefix: '7-дневный бесплатный период, затем ', startWithTrial: 'Бесплатный период', payNowSkipTrial: 'Оплатить сейчас',
     closeWord: 'Закрыть', markDayComplete: 'Отметить день выполненным', backToResults: '← Назад к результатам',
@@ -4125,7 +4389,7 @@ const TRANSLATIONS = {
     paywallTitle: 'Face Scan freischalten', paywallTrialDesc: 'Deine 7-tägige kostenlose Testphase umfasst 2 Frisurenvorschläge für deine Form. Die Seitenprofilanalyse und der komplette 90-Tage-Übungsplan werden freigeschaltet, sobald dein Abo von der Testphase in die bezahlte Phase übergeht. Kündige jederzeit im Play Store, bevor sie endet, und es wird dir nichts berechnet.',
     welcomeSplashText: 'Willkommen', loadingPlans: 'Pläne werden geladen…', startFreeTrial: 'Kostenlose Testphase starten', continueToPayment: 'Weiter', restorePurchase: 'Kauf wiederherstellen', manageCancelSubscription: 'Abo verwalten / kündigen',
     autoRenewDisclosure: 'Abos verlängern sich automatisch zum angezeigten Preis, sofern sie nicht mindestens 24 Stunden vor Ende der Testphase oder des Abrechnungszeitraums gekündigt werden. Nutze jederzeit "Abo verwalten / kündigen" oben oder die Abo-Seite deines Google Play-Kontos.',
-    subsOnlyOnPlay: 'Abos sind nur verfügbar, wenn die App über Google Play installiert wurde.', iosInAppTitle: "In Safari öffnen", iosInAppBody: "Damit Kamera und Google-Anmeldung funktionieren, öffne FaceScan in Safari: Tippe auf ••• oder das Teilen-Symbol und dann auf „Im Browser öffnen“.", iosOpenSafari: "In Safari öffnen", iosA2hsTitle: "FaceScan zum Home-Bildschirm hinzufügen", iosA2hsBody: "Tippe in Safari auf Teilen {share} und dann auf „Zum Home-Bildschirm“. FaceScan öffnet sich dann im Vollbild wie eine App.", bannerDismiss: "Nicht jetzt", subsIosSoon: "Premium fürs iPhone kommt bald. Bis dahin funktionieren alle kostenlosen Funktionen hier in Safari.", playTitle: "Hol dir die FaceScan-App", playBody: "Installiere FaceScan über Google Play für die Vollbild-App und Premium.", playBtn: "Bei Google Play laden", plansLoadError: 'Abo-Pläne konnten nicht geladen werden — überprüfe deine Verbindung, oder die Abo-Produkte sind in der Play Console noch nicht eingerichtet.',
+    subsOnlyOnPlay: 'Abos sind nur verfügbar, wenn die App über Google Play installiert wurde.', iosInAppTitle: "In Safari öffnen", iosInAppBody: "Damit Kamera und Google-Anmeldung funktionieren, öffne FaceScan in Safari: Tippe auf ••• oder das Teilen-Symbol und dann auf „Im Browser öffnen“.", iosOpenSafari: "In Safari öffnen", iosA2hsTitle: "FaceScan zum Home-Bildschirm hinzufügen", iosA2hsBody: "Tippe in Safari auf Teilen {share} und dann auf „Zum Home-Bildschirm“. FaceScan öffnet sich dann im Vollbild wie eine App.", bannerDismiss: "Nicht jetzt", subsIosSoon: "Premium fürs iPhone kommt bald. Bis dahin funktionieren alle kostenlosen Funktionen hier in Safari.", playTitle: "Hol dir die FaceScan-App", playBody: "Installiere FaceScan über Google Play für die Vollbild-App und Premium.", playBtn: "Bei Google Play laden", webSignInRequired: "Melde dich mit Google an, um ein Abo abzuschließen. Premium ist mit deinem Google-Konto verknüpft, sodass du es auf jedem Gerät wiederherstellen kannst.", webActivating: "Zahlung erhalten — Premium wird aktiviert…", webActivateDelay: "Zahlung erhalten. Die Aktivierung von Premium kann eine Minute dauern — tippe gleich auf „Kauf wiederherstellen“.", webTrialNote: "Du bist in der 7-tägigen Gratis-Testphase. Seitenprofil, der komplette Frisurenguide und der 90-Tage-Plan werden freigeschaltet, sobald am Ende der Testphase deine erste Zahlung eingeht.", webDisclosure: "Abos verlängern sich automatisch zum angezeigten Preis, sofern sie nicht vor Ende der Testphase oder des Abrechnungszeitraums gekündigt werden. Zahlungen werden von unserem Reseller Paddle.com abgewickelt. Kündige jederzeit über „Abo verwalten / kündigen“ oben oder den Link in deiner Beleg-E-Mail.", plansLoadError: 'Abo-Pläne konnten nicht geladen werden — überprüfe deine Verbindung, oder die Abo-Produkte sind in der Play Console noch nicht eingerichtet.',
     purchaseNotCompleted: 'Der Kauf wurde nicht abgeschlossen. Du kannst es jederzeit erneut versuchen.', noActiveSubFound: 'Für dieses Google-Konto wurde kein aktives Abo gefunden.',
     planAnnual: 'Jährlich', planMonthly: 'Monatlich', bestValue: 'BESTER WERT', perYear: '/Jahr', perMonth: '/Monat', autoRenewsCancelAnytime: 'verlängert sich automatisch, jederzeit kündbar', trialPrefix: '7 Tage kostenlos testen, danach ', startWithTrial: 'Kostenlos testen', payNowSkipTrial: 'Jetzt zahlen',
     closeWord: 'Schließen', markDayComplete: 'Tag als erledigt markieren', backToResults: '← Zurück zu den Ergebnissen',
