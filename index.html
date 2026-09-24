@@ -793,10 +793,33 @@
   <footer>
     <span data-i18n="footerCredit1">MediaPipe Face Mesh (468-point landmark model, Apache 2.0 license) runs entirely in your browser.</span><br>
     <span data-i18n="footerCredit2">Not a diagnosis, medical assessment, or attractiveness rating.</span><br><br>
-    <span class="footer-link" id="termsLink" data-i18n="termsOfUse">Terms of Use</span>
+    <a class="footer-link" id="termsLink" href="terms.html" data-i18n="termsOfUse">Terms of Use</a>
     &nbsp;·&nbsp;
-    <span class="footer-link" id="privacyLink" data-i18n="privacyPolicy">Privacy Policy</span>
+    <a class="footer-link" id="privacyLink" href="privacy.html" data-i18n="privacyPolicy">Privacy Policy</a>
+    <span class="web-only" style="display:none;">
+      &nbsp;·&nbsp;
+      <a class="footer-link" href="refund.html">Refund Policy</a>
+      &nbsp;·&nbsp;
+      <a class="footer-link" href="pricing.html">Pricing</a>
+    </span>
   </footer>
+  <script>
+    /* Show web-only links (Pricing / Refund) only outside the Android app.
+       The Play Store app (TWA) opens with an android-app:// referrer; we
+       remember that for the session so later page loads stay hidden too. */
+    (function(){
+      var TWA_REF = 'android-app://io.github.yesyesyeslucas_cmd.twa';
+      var inApp = false;
+      try{
+        if (document.referrer && document.referrer.indexOf(TWA_REF) === 0) sessionStorage.setItem('fs_in_app','1');
+        inApp = sessionStorage.getItem('fs_in_app') === '1';
+      }catch(e){ inApp = (document.referrer || '').indexOf(TWA_REF) === 0; }
+      if (!inApp){
+        var els = document.querySelectorAll('.web-only');
+        for (var i = 0; i < els.length; i++) els[i].style.display = '';
+      }
+    })();
+  </script>
 </div>
 
 <div class="auth-modal" id="legalModal">
@@ -3757,8 +3780,8 @@ function openLegal(kind){
   document.getElementById('legalBody').innerHTML = set[kind];
   document.getElementById('legalModal').classList.add('active');
 }
-document.getElementById('termsLink').addEventListener('click', () => openLegal('terms'));
-document.getElementById('privacyLink').addEventListener('click', () => openLegal('privacy'));
+document.getElementById('termsLink').addEventListener('click', (e) => { e.preventDefault(); openLegal('terms'); });
+document.getElementById('privacyLink').addEventListener('click', (e) => { e.preventDefault(); openLegal('privacy'); });
 document.getElementById('legalClose').addEventListener('click', () => {
   document.getElementById('legalModal').classList.remove('active');
 });
