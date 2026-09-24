@@ -4,60 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Refund Policy — FaceScan: AI Face Analysis</title>
+<meta name="description" content="FaceScan refund policy for Premium subscriptions.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#060B12; --line:rgba(34,211,238,0.16); --signal:#22D3EE; --ink:#EAF2F0; --ink-dim:#7C8B95; }
+  :root{ --bg:#060B12; --panel:#0B131E; --line:rgba(34,211,238,0.16); --signal:#22D3EE; --ink:#EAF2F0; --ink-dim:#7C8B95; }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{ background:var(--bg); color:var(--ink); font-family:'Space Grotesk', system-ui, -apple-system, sans-serif;
-    line-height:1.6; padding:env(safe-area-inset-top,0) 20px env(safe-area-inset-bottom,0); }
-  main{ max-width:640px; margin:0 auto; padding:48px 0 40px; }
+  body{ background:radial-gradient(ellipse at 50% -10%, rgba(34,211,238,0.08), transparent 50%), var(--bg); color:var(--ink);
+    font-family:'Space Grotesk', system-ui, -apple-system, sans-serif; line-height:1.55; min-height:100vh;
+    padding:env(safe-area-inset-top,0) 20px env(safe-area-inset-bottom,0); }
+  main{ max-width:640px; margin:0 auto; padding:40px 0 40px; }
   a{ color:var(--signal); }
+  .top{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .back{ font-size:14px; text-decoration:none; }
-  h1{ font-size:clamp(28px,7vw,38px); line-height:1.15; margin:24px 0 6px; letter-spacing:-0.02em; }
-  .updated{ font-size:13px; color:var(--ink-dim); margin-bottom:28px; }
+  select{ background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; }
+  h1{ font-size:clamp(28px,7vw,42px); line-height:1.1; margin:24px 0 10px; letter-spacing:-0.02em; }
+  .lead{ color:var(--ink-dim); font-size:16px; max-width:52ch; }
+  .updated{ font-size:13px; color:var(--ink-dim); margin-bottom:24px; }
   h2{ font-size:17px; color:var(--signal); margin:26px 0 8px; }
   p, li{ font-size:15px; color:#CDD8D6; margin-bottom:10px; }
   ul{ padding-left:20px; }
+  .plans{ display:grid; gap:16px; margin:32px 0; }
+  @media (min-width:640px){ .plans{ grid-template-columns:1fr 1fr 1fr; } }
+  .plan{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 20px; }
+  .plan.best{ border-color:var(--signal); }
+  .plan h3{ font-size:17px; font-weight:600; }
+  .price{ font-size:34px; font-weight:700; margin:10px 0 2px; letter-spacing:-0.02em; }
+  .price small{ font-size:15px; font-weight:500; color:var(--ink-dim); }
+  .pnote{ font-size:13px; color:var(--ink-dim); min-height:20px; }
+  .plan ul{ list-style:none; padding:0; margin-top:16px; }
+  .plan li{ font-size:14px; padding:6px 0; margin:0; border-top:1px solid var(--line); }
+  .tnote{ font-size:12px; color:var(--ink-dim); margin-top:24px; }
   footer{ margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-dim); }
-  footer a{ color:var(--ink-dim); margin-right:14px; }
-  a:focus-visible{ outline:2px solid var(--signal); outline-offset:3px; border-radius:4px; }
+  footer a{ color:var(--ink-dim); margin-right:14px; display:inline-block; margin-bottom:6px; }
+  a:focus-visible, select:focus-visible{ outline:2px solid var(--signal); outline-offset:3px; border-radius:4px; }
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="./">‹ Back to FaceScan</a>
-  <h1>Refund Policy</h1>
-  <p class="updated">Last updated: September 2026</p>
+  <div class="top">
+    <a class="back" href="./" data-t="back">‹ Back to FaceScan</a>
+    <select id="langSel" aria-label="Language"><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="tr">Türkçe</option><option value="az">Azərbaycanca</option><option value="ru">Русский</option><option value="de">Deutsch</option></select>
+  </div>
+  <h1 data-t="title">Refund Policy</h1>
+  <p class="updated" data-t="updated">Last updated: September 2026</p>
+  <p data-t="intro">This policy applies to FaceScan: AI Face Analysis Premium subscriptions, provided by AI Face Studio.</p>
 
-  <p>This policy applies to FaceScan: AI Face Analysis Premium subscriptions, provided by AI Face Studio.</p>
+  <h2 data-t="trialH">Free trial</h2>
+  <p data-t="trialP">Premium plans start with a 7-day free trial. If you cancel before the trial ends, you will not be charged.</p>
 
-  <h2>Free trial</h2>
-  <p>Premium plans start with a 7-day free trial. If you cancel before the trial ends, you will not be charged.</p>
-
-  <h2>Purchases on our website</h2>
-  <p>Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all web orders and handles billing, refunds and customer service inquiries related to payments.</p>
+  <h2 data-t="webH">Purchases on our website</h2>
+  <p data-t="webP">Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all web orders and handles billing, refunds and customer service inquiries related to payments.</p>
   <ul>
-    <li>You can request a full refund within 14 days of any payment, including the first payment after your free trial and each renewal.</li>
-    <li>To request a refund, contact Paddle through the link in your purchase receipt email, or visit <a href="https://paddle.net" rel="noopener">paddle.net</a>. You can also email us at <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a> and we'll help.</li>
-    <li>Refunds are returned to the original payment method. After a refund, Premium access ends.</li>
+    <li data-t="li1">You can request a full refund within 14 days of any payment, including the first payment after your free trial and each renewal.</li>
+    <li data-t="li2">To request a refund, contact Paddle through the link in your purchase receipt email, or visit <a href="https://paddle.net" rel="noopener">paddle.net</a>. You can also email us at <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a> and we'll help.</li>
+    <li data-t="li3">Refunds are returned to the original payment method. After a refund, Premium access ends.</li>
   </ul>
 
-  <h2>Purchases in the Android app (Google Play)</h2>
-  <p>Subscriptions bought in the Android app are billed by Google Play and follow Google Play's refund policy. You can request a refund through your Google Play account or at <a href="https://support.google.com/googleplay/answer/2479637" rel="noopener">Google Play Help</a>. You can also contact us and we'll help where we can.</p>
+  <h2 data-t="androidH">Purchases in the Android app (Google Play)</h2>
+  <p data-t="androidP">Subscriptions bought in the Android app are billed by Google Play and follow Google Play's refund policy. You can request a refund through your Google Play account or at <a href="https://support.google.com/googleplay/answer/2479637" rel="noopener">Google Play Help</a>. You can also contact us and we'll help where we can.</p>
 
-  <h2>Cancelling</h2>
-  <p>You can cancel at any time. Cancelling stops future renewals; you keep Premium until the end of the period you've already paid for. Web subscriptions can be cancelled from the link in your receipt email; Google Play subscriptions from the Subscriptions page in the Play Store.</p>
+  <h2 data-t="cancelH">Cancelling</h2>
+  <p data-t="cancelP">You can cancel at any time. Cancelling stops future renewals; you keep Premium until the end of the period you've already paid for. Web subscriptions can be cancelled from the link in your receipt email; Google Play subscriptions from the Subscriptions page in the Play Store.</p>
 
-  <h2>Contact</h2>
-  <p>Email <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a>. We usually reply within 2 business days.</p>
-
+  <h2 data-t="contactH">Contact</h2>
+  <p data-t="contactP">Email <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a>. We usually reply within 2 business days.</p>
+  <p class="tnote" data-t="note"></p>
   <footer>
-    <a href="pricing.html">Pricing</a>
-    <a href="terms.html">Terms of Service</a>
-    <a href="privacy.html">Privacy Policy</a>
+    <a href="pricing.html" data-t="pricing">Pricing</a>
+    <a href="terms.html" data-t="terms">Terms of Service</a>
+    <a href="privacy.html" data-t="privacy">Privacy Policy</a>
     <p style="margin-top:10px;">© 2026 AI Face Studio</p>
   </footer>
 </main>
+<script>
+(function(){
+  var T = {"en": {"back": "‹ Back to FaceScan", "terms": "Terms of Service", "privacy": "Privacy Policy", "refund": "Refund Policy", "pricing": "Pricing", "note": "", "title": "Refund Policy", "updated": "Last updated: September 2026", "intro": "This policy applies to FaceScan: AI Face Analysis Premium subscriptions, provided by AI Face Studio.", "trialH": "Free trial", "trialP": "Premium plans start with a 7-day free trial. If you cancel before the trial ends, you will not be charged.", "webH": "Purchases on our website", "webP": "Our order process is conducted by our online reseller Paddle.com. Paddle.com is the Merchant of Record for all web orders and handles billing, refunds and customer service inquiries related to payments.", "li1": "You can request a full refund within 14 days of any payment, including the first payment after your free trial and each renewal.", "li2": "To request a refund, contact Paddle through the link in your purchase receipt email, or visit <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a>. You can also email us at <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> and we'll help.", "li3": "Refunds are returned to the original payment method. After a refund, Premium access ends.", "androidH": "Purchases in the Android app (Google Play)", "androidP": "Subscriptions bought in the Android app are billed by Google Play and follow Google Play's refund policy. You can request a refund through your Google Play account or at <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Google Play Help</a>. You can also contact us and we'll help where we can.", "cancelH": "Cancelling", "cancelP": "You can cancel at any time. Cancelling stops future renewals; you keep Premium until the end of the period you've already paid for. Web subscriptions can be cancelled from the link in your receipt email; Google Play subscriptions from the Subscriptions page in the Play Store.", "contactH": "Contact", "contactP": "Email <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>. We usually reply within 2 business days."}, "es": {"back": "‹ Volver a FaceScan", "terms": "Términos del servicio", "privacy": "Política de privacidad", "refund": "Política de reembolso", "pricing": "Precios", "note": "Esta página es una traducción por comodidad; en caso de diferencias, prevalece la versión en inglés.", "title": "Política de reembolso", "updated": "Última actualización: septiembre de 2026", "intro": "Esta política se aplica a las suscripciones Premium de FaceScan: AI Face Analysis, ofrecidas por AI Face Studio.", "trialH": "Prueba gratuita", "trialP": "Los planes Premium comienzan con una prueba gratuita de 7 días. Si cancelas antes de que termine, no se te cobrará.", "webH": "Compras en nuestro sitio web", "webP": "Nuestro proceso de pedidos lo gestiona nuestro revendedor en línea Paddle.com. Paddle.com es el Merchant of Record de todos los pedidos web y se encarga de la facturación, los reembolsos y las consultas de atención al cliente relacionadas con los pagos.", "li1": "Puedes solicitar un reembolso completo dentro de los 14 días posteriores a cualquier pago, incluido el primer pago tras la prueba y cada renovación.", "li2": "Para solicitar un reembolso, contacta con Paddle mediante el enlace de tu correo de recibo o visita <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a>. También puedes escribirnos a <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> y te ayudaremos.", "li3": "Los reembolsos se devuelven al método de pago original. Tras el reembolso, el acceso Premium termina.", "androidH": "Compras en la app de Android (Google Play)", "androidP": "Las suscripciones compradas en la app de Android las factura Google Play y se rigen por su política de reembolsos. Puedes solicitar un reembolso desde tu cuenta de Google Play o en <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">la Ayuda de Google Play</a>. También puedes contactarnos y te ayudaremos en lo posible.", "cancelH": "Cancelación", "cancelP": "Puedes cancelar en cualquier momento. La cancelación detiene las renovaciones futuras y conservas Premium hasta el final del período ya pagado. Las suscripciones web se cancelan desde el enlace de tu correo de recibo; las de Google Play, desde la página de Suscripciones de Play Store.", "contactH": "Contacto", "contactP": "Escribe a <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>. Normalmente respondemos en 2 días hábiles."}, "pt": {"back": "‹ Voltar ao FaceScan", "terms": "Termos de Serviço", "privacy": "Política de Privacidade", "refund": "Política de Reembolso", "pricing": "Preços", "note": "Esta página é uma tradução para conveniência; em caso de diferença, prevalece a versão em inglês.", "title": "Política de Reembolso", "updated": "Última atualização: setembro de 2026", "intro": "Esta política se aplica às assinaturas Premium do FaceScan: AI Face Analysis, oferecidas pela AI Face Studio.", "trialH": "Teste grátis", "trialP": "Os planos Premium começam com um teste grátis de 7 dias. Se você cancelar antes do fim do teste, não será cobrado.", "webH": "Compras no nosso site", "webP": "Nosso processo de pedidos é conduzido pelo nosso revendedor on-line Paddle.com. A Paddle.com é o Merchant of Record de todos os pedidos pela web e cuida da cobrança, dos reembolsos e do atendimento ao cliente relacionados a pagamentos.", "li1": "Você pode pedir reembolso total em até 14 dias após qualquer pagamento, incluindo o primeiro pagamento após o teste e cada renovação.", "li2": "Para pedir reembolso, fale com a Paddle pelo link no e-mail do recibo ou acesse <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a>. Você também pode nos escrever em <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> e ajudaremos.", "li3": "Os reembolsos voltam para o método de pagamento original. Após o reembolso, o acesso Premium termina.", "androidH": "Compras no app Android (Google Play)", "androidP": "As assinaturas compradas no app Android são cobradas pelo Google Play e seguem a política de reembolso do Google Play. Você pode pedir reembolso pela sua conta do Google Play ou na <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Central de Ajuda do Google Play</a>. Você também pode falar conosco e ajudaremos no que for possível.", "cancelH": "Cancelamento", "cancelP": "Você pode cancelar a qualquer momento. O cancelamento interrompe as renovações futuras, e você mantém o Premium até o fim do período já pago. Assinaturas pela web são canceladas pelo link no e-mail do recibo; as do Google Play, na página Assinaturas da Play Store.", "contactH": "Contato", "contactP": "Escreva para <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>. Normalmente respondemos em até 2 dias úteis."}, "tr": {"back": "‹ FaceScan'e dön", "terms": "Kullanım Koşulları", "privacy": "Gizlilik Politikası", "refund": "İade Politikası", "pricing": "Fiyatlandırma", "note": "Bu sayfa kolaylık için çevrilmiştir; farklılık olması durumunda İngilizce sürüm geçerlidir.", "title": "İade Politikası", "updated": "Son güncelleme: Eylül 2026", "intro": "Bu politika, AI Face Studio tarafından sunulan FaceScan: AI Face Analysis Premium abonelikleri için geçerlidir.", "trialH": "Ücretsiz deneme", "trialP": "Premium planlar 7 günlük ücretsiz denemeyle başlar. Deneme bitmeden iptal edersen ücret alınmaz.", "webH": "Web sitemizden yapılan satın almalar", "webP": "Sipariş sürecimiz online satıcımız Paddle.com tarafından yürütülür. Paddle.com tüm web siparişlerinin Merchant of Record’udur (resmi satıcısıdır) ve ödemelerle ilgili faturalandırma, iade ve müşteri hizmetleri taleplerini yönetir.", "li1": "Her ödemeden sonraki 14 gün içinde tam iade talep edebilirsin; buna denemeden sonraki ilk ödeme ve her yenileme dahildir.", "li2": "İade talep etmek için satın alma makbuzu e-postandaki bağlantıdan Paddle ile iletişime geç veya <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a> adresini ziyaret et. Bize <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> adresinden de yazabilirsin, yardımcı oluruz.", "li3": "İadeler orijinal ödeme yöntemine yapılır. İade yapıldıktan sonra Premium erişimi sona erer.", "androidH": "Android uygulamasındaki satın almalar (Google Play)", "androidP": "Android uygulamasında satın alınan abonelikler Google Play tarafından faturalandırılır ve Google Play'in iade politikasına tabidir. İadeyi Google Play hesabından veya <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Google Play Yardım</a> sayfasından talep edebilirsin. Bize de ulaşabilirsin, elimizden geldiğince yardımcı oluruz.", "cancelH": "İptal", "cancelP": "İstediğin zaman iptal edebilirsin. İptal, gelecekteki yenilemeleri durdurur; ödediğin dönemin sonuna kadar Premium'u kullanmaya devam edersin. Web abonelikleri makbuz e-postandaki bağlantıdan, Google Play abonelikleri Play Store'daki Abonelikler sayfasından iptal edilir.", "contactH": "İletişim", "contactP": "<a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> adresine yaz. Genellikle 2 iş günü içinde yanıt veririz."}, "az": {"back": "‹ FaceScan-ə qayıt", "terms": "İstifadə Şərtləri", "privacy": "Məxfilik Siyasəti", "refund": "Geri Qaytarma Siyasəti", "pricing": "Qiymətlər", "note": "Bu səhifə rahatlıq üçün tərcümə olunub; fərq olduqda ingilis dilindəki versiya əsas götürülür.", "title": "Geri Qaytarma Siyasəti", "updated": "Son yenilənmə: sentyabr 2026", "intro": "Bu siyasət AI Face Studio tərəfindən təqdim olunan FaceScan: AI Face Analysis Premium abunəliklərinə aiddir.", "trialH": "Pulsuz sınaq", "trialP": "Premium planlar 7 günlük pulsuz sınaqla başlayır. Sınaq bitməzdən əvvəl ləğv etsən, ödəniş alınmır.", "webH": "Veb saytımızdan edilən alışlar", "webP": "Sifariş prosesimizi onlayn satış tərəfdaşımız Paddle.com həyata keçirir. Paddle.com bütün veb sifarişlərinin Merchant of Record-udur (rəsmi satıcısıdır) və ödənişlərlə bağlı hesablaşma, geri qaytarma və müştəri xidməti sorğularını idarə edir.", "li1": "İstənilən ödənişdən sonra 14 gün ərzində tam geri qaytarma tələb edə bilərsən; buna sınaqdan sonrakı ilk ödəniş və hər yenilənmə daxildir.", "li2": "Geri qaytarma üçün qəbz e-poçtundakı keçidlə Paddle ilə əlaqə saxla və ya <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a> saytına daxil ol. Bizə <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> ünvanına da yaza bilərsən, kömək edərik.", "li3": "Pul ilkin ödəniş üsuluna qaytarılır. Geri qaytarmadan sonra Premium girişi bitir.", "androidH": "Android tətbiqində alışlar (Google Play)", "androidP": "Android tətbiqində alınan abunəliklər Google Play tərəfindən hesablanır və Google Play-in geri qaytarma siyasətinə tabedir. Geri qaytarmanı Google Play hesabından və ya <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Google Play Yardım</a> səhifəsindən tələb edə bilərsən. Bizimlə də əlaqə saxlaya bilərsən, əlimizdən gələn köməyi edərik.", "cancelH": "Ləğv etmə", "cancelP": "İstənilən vaxt ləğv edə bilərsən. Ləğv etmə gələcək yenilənmələri dayandırır; ödədiyin dövrün sonuna qədər Premium səndə qalır. Veb abunəlikləri qəbz e-poçtundakı keçidlə, Google Play abunəlikləri isə Play Store-dakı Abunəliklər səhifəsindən ləğv edilir.", "contactH": "Əlaqə", "contactP": "<a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> ünvanına yaz. Adətən 2 iş günü ərzində cavab veririk."}, "ru": {"back": "‹ Назад в FaceScan", "terms": "Условия использования", "privacy": "Политика конфиденциальности", "refund": "Политика возврата", "pricing": "Цены", "note": "Эта страница переведена для удобства; при расхождениях действует версия на английском языке.", "title": "Политика возврата", "updated": "Последнее обновление: сентябрь 2026", "intro": "Эта политика действует для подписок Premium на FaceScan: AI Face Analysis, предоставляемых AI Face Studio.", "trialH": "Бесплатный пробный период", "trialP": "Планы Premium начинаются с 7-дневного бесплатного пробного периода. Если отменить подписку до его окончания, списания не будет.", "webH": "Покупки на нашем сайте", "webP": "Оформление заказов осуществляет наш онлайн-реселлер Paddle.com. Paddle.com является продавцом (Merchant of Record) по всем заказам на сайте и занимается выставлением счетов, возвратами и обращениями клиентов, связанными с оплатой.", "li1": "Вы можете запросить полный возврат в течение 14 дней после любого платежа, включая первый платёж после пробного периода и каждое продление.", "li2": "Чтобы запросить возврат, свяжитесь с Paddle по ссылке в письме с чеком или зайдите на <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a>. Также можно написать нам на <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> — мы поможем.", "li3": "Деньги возвращаются на исходный способ оплаты. После возврата доступ к Premium прекращается.", "androidH": "Покупки в Android-приложении (Google Play)", "androidP": "Подписки, оформленные в Android-приложении, оплачиваются через Google Play и регулируются его политикой возврата. Запросить возврат можно в аккаунте Google Play или в <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Справочном центре Google Play</a>. Вы также можете написать нам — поможем, чем сможем.", "cancelH": "Отмена", "cancelP": "Отменить подписку можно в любой момент. Отмена останавливает будущие продления, а Premium сохраняется до конца уже оплаченного периода. Подписку на сайте можно отменить по ссылке в письме с чеком, подписку Google Play — на странице «Подписки» в Play Маркете.", "contactH": "Контакты", "contactP": "Пишите на <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>. Обычно отвечаем в течение 2 рабочих дней."}, "de": {"back": "‹ Zurück zu FaceScan", "terms": "Nutzungsbedingungen", "privacy": "Datenschutzerklärung", "refund": "Rückerstattungsrichtlinie", "pricing": "Preise", "note": "Diese Seite ist eine Übersetzung zur Vereinfachung; bei Abweichungen gilt die englische Fassung.", "title": "Rückerstattungsrichtlinie", "updated": "Zuletzt aktualisiert: September 2026", "intro": "Diese Richtlinie gilt für Premium-Abos von FaceScan: AI Face Analysis, angeboten von AI Face Studio.", "trialH": "Gratis-Testphase", "trialP": "Premium-Pläne starten mit einer 7-tägigen Gratis-Testphase. Wenn du vor deren Ende kündigst, wird nichts abgebucht.", "webH": "Käufe auf unserer Website", "webP": "Unser Bestellprozess wird von unserem Online-Reseller Paddle.com abgewickelt. Paddle.com ist der Merchant of Record für alle Web-Bestellungen und kümmert sich um Abrechnung, Erstattungen und Kundenanfragen rund um Zahlungen.", "li1": "Du kannst innerhalb von 14 Tagen nach jeder Zahlung eine volle Erstattung anfordern — auch für die erste Zahlung nach der Testphase und jede Verlängerung.", "li2": "Für eine Erstattung kontaktiere Paddle über den Link in deiner Beleg-E-Mail oder besuche <a href=\"https://paddle.net\" rel=\"noopener\">paddle.net</a>. Du kannst uns auch an <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> schreiben, wir helfen dir.", "li3": "Erstattungen gehen an die ursprüngliche Zahlungsmethode. Nach einer Erstattung endet der Premium-Zugang.", "androidH": "Käufe in der Android-App (Google Play)", "androidP": "In der Android-App gekaufte Abos werden über Google Play abgerechnet und unterliegen der Erstattungsrichtlinie von Google Play. Eine Erstattung kannst du über dein Google-Play-Konto oder in der <a href=\"https://support.google.com/googleplay/answer/2479637\" rel=\"noopener\">Google Play-Hilfe</a> anfordern. Du kannst uns auch kontaktieren, wir helfen, wo wir können.", "cancelH": "Kündigung", "cancelP": "Du kannst jederzeit kündigen. Eine Kündigung stoppt künftige Verlängerungen, Premium bleibt bis zum Ende des bereits bezahlten Zeitraums aktiv. Web-Abos kündigst du über den Link in deiner Beleg-E-Mail, Google-Play-Abos auf der Seite „Abos“ im Play Store.", "contactH": "Kontakt", "contactP": "Schreib an <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>. Wir antworten meist innerhalb von 2 Werktagen."}};
+  var LANGS = ["en", "es", "pt", "tr", "az", "ru", "de"];
+  var TITLE_KEY = "title";
+  function pick(){
+    try{
+      var q = new URLSearchParams(location.search).get('lang');
+      if (q && LANGS.indexOf(q) >= 0) return q;
+    }catch(e){}
+    try{
+      var s = localStorage.getItem('faceScanLang');
+      if (s && LANGS.indexOf(s) >= 0) return s;
+    }catch(e){}
+    var n = (navigator.language || 'en').slice(0,2).toLowerCase();
+    return LANGS.indexOf(n) >= 0 ? n : 'en';
+  }
+  function apply(lang){
+    var d = T[lang] || T.en;
+    document.documentElement.lang = lang;
+    var els = document.querySelectorAll('[data-t]');
+    for (var i = 0; i < els.length; i++){
+      var k = els[i].getAttribute('data-t');
+      if (d[k] !== undefined) els[i].innerHTML = d[k];
+    }
+    document.title = d[TITLE_KEY].replace(/<[^>]+>/g,'') + ' — FaceScan: AI Face Analysis';
+    var sel = document.getElementById('langSel');
+    if (sel) sel.value = lang;
+  }
+  var sel = document.getElementById('langSel');
+  if (sel) sel.addEventListener('change', function(){
+    try{ localStorage.setItem('faceScanLang', sel.value); }catch(e){}
+    apply(sel.value);
+  });
+  apply(pick());
+})();
+</script>
 </body>
 </html>
