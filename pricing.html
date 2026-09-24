@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pricing — FaceScan: AI Face Analysis</title>
-<meta name="description" content="FaceScan pricing: free face shape scan, Premium $10/month or $30/year with a 7-day free trial.">
+<meta name="description" content="FaceScan pricing: free face scan, Premium $10/month or $30/year with a 7-day free trial.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -13,80 +13,125 @@
   body{ background:radial-gradient(ellipse at 50% -10%, rgba(34,211,238,0.08), transparent 50%), var(--bg); color:var(--ink);
     font-family:'Space Grotesk', system-ui, -apple-system, sans-serif; line-height:1.55; min-height:100vh;
     padding:env(safe-area-inset-top,0) 20px env(safe-area-inset-bottom,0); }
-  main{ max-width:640px; margin:0 auto; padding:48px 0 40px; }
+  main{ max-width:640px; margin:0 auto; padding:40px 0 40px; }
   a{ color:var(--signal); }
+  .top{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .back{ font-size:14px; text-decoration:none; }
-  h1{ font-size:clamp(30px,7vw,42px); line-height:1.1; margin:24px 0 10px; letter-spacing:-0.02em; }
+  select{ background:var(--panel); color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; }
+  h1{ font-size:clamp(28px,7vw,42px); line-height:1.1; margin:24px 0 10px; letter-spacing:-0.02em; }
   .lead{ color:var(--ink-dim); font-size:16px; max-width:52ch; }
+  .updated{ font-size:13px; color:var(--ink-dim); margin-bottom:24px; }
+  h2{ font-size:17px; color:var(--signal); margin:26px 0 8px; }
+  p, li{ font-size:15px; color:#CDD8D6; margin-bottom:10px; }
+  ul{ padding-left:20px; }
   .plans{ display:grid; gap:16px; margin:32px 0; }
   @media (min-width:640px){ .plans{ grid-template-columns:1fr 1fr 1fr; } }
   .plan{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 20px; }
   .plan.best{ border-color:var(--signal); }
-  .plan h2{ font-size:17px; font-weight:600; }
+  .plan h3{ font-size:17px; font-weight:600; }
   .price{ font-size:34px; font-weight:700; margin:10px 0 2px; letter-spacing:-0.02em; }
   .price small{ font-size:15px; font-weight:500; color:var(--ink-dim); }
-  .note{ font-size:13px; color:var(--ink-dim); min-height:20px; }
-  .plan ul{ list-style:none; margin-top:16px; }
-  .plan li{ font-size:14px; padding:6px 0; border-top:1px solid var(--line); }
-  .details{ font-size:14px; color:#CDD8D6; }
-  .details p{ margin-bottom:10px; }
-  footer{ margin-top:40px; font-size:13px; color:var(--ink-dim); }
-  footer a{ color:var(--ink-dim); margin-right:14px; }
-  a:focus-visible{ outline:2px solid var(--signal); outline-offset:3px; border-radius:4px; }
+  .pnote{ font-size:13px; color:var(--ink-dim); min-height:20px; }
+  .plan ul{ list-style:none; padding:0; margin-top:16px; }
+  .plan li{ font-size:14px; padding:6px 0; margin:0; border-top:1px solid var(--line); }
+  .tnote{ font-size:12px; color:var(--ink-dim); margin-top:24px; }
+  footer{ margin-top:40px; padding-top:16px; border-top:1px solid var(--line); font-size:13px; color:var(--ink-dim); }
+  footer a{ color:var(--ink-dim); margin-right:14px; display:inline-block; margin-bottom:6px; }
+  a:focus-visible, select:focus-visible{ outline:2px solid var(--signal); outline-offset:3px; border-radius:4px; }
 </style>
 </head>
 <body>
 <main>
-  <a class="back" href="./">‹ Back to FaceScan</a>
-  <h1>Pricing</h1>
-  <p class="lead">Start with a free face scan. Upgrade to Premium for the full side-profile analysis, hairstyle guide and 90-day exercise plan.</p>
+  <div class="top">
+    <a class="back" href="./" data-t="back">‹ Back to FaceScan</a>
+    <select id="langSel" aria-label="Language"><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="tr">Türkçe</option><option value="az">Azərbaycanca</option><option value="ru">Русский</option><option value="de">Deutsch</option></select>
+  </div>
+  <h1 data-t="title">Pricing</h1>
+  <p class="lead" data-t="lead">Start with a free face scan. Upgrade to Premium for the full side-profile analysis, hairstyle guide and 90-day exercise plan.</p>
 
   <section class="plans">
     <div class="plan">
-      <h2>Free</h2>
+      <h3 data-t="free">Free</h3>
       <div class="price">$0</div>
-      <div class="note">No account needed</div>
+      <div class="pnote" data-t="noAccount">No account needed</div>
       <ul>
-        <li>Front face shape scan</li>
-        <li>First hairstyle recommendation</li>
-        <li>First 7 days of the exercise plan</li>
+        <li data-t="f1">Front face shape scan</li>
+        <li data-t="f2">First hairstyle recommendation</li>
+        <li data-t="f3">First 7 days of the exercise plan</li>
       </ul>
     </div>
     <div class="plan">
-      <h2>Premium monthly</h2>
-      <div class="price">$10 <small>/ month</small></div>
-      <div class="note">7-day free trial</div>
+      <h3 data-t="monthly">Premium monthly</h3>
+      <div class="price">$10 <small data-t="perMonth">/ month</small></div>
+      <div class="pnote" data-t="trial7">7-day free trial</div>
       <ul>
-        <li>Everything in Free</li>
-        <li>Side profile analysis</li>
-        <li>Full hairstyle guide</li>
-        <li>Full 90-day exercise plan</li>
+        <li data-t="m1">Everything in Free</li>
+        <li data-t="m2">Side profile analysis</li>
+        <li data-t="m3">Full hairstyle guide</li>
+        <li data-t="m4">Full 90-day exercise plan</li>
       </ul>
     </div>
     <div class="plan best">
-      <h2>Premium yearly</h2>
-      <div class="price">$30 <small>/ year</small></div>
-      <div class="note">7-day free trial · save 75%</div>
+      <h3 data-t="yearly">Premium yearly</h3>
+      <div class="price">$30 <small data-t="perYear">/ year</small></div>
+      <div class="pnote" data-t="trialSave">7-day free trial · save 75%</div>
       <ul>
-        <li>Everything in Premium monthly</li>
-        <li>Billed once a year</li>
+        <li data-t="y1">Everything in Premium monthly</li>
+        <li data-t="y2">Billed once a year</li>
       </ul>
     </div>
   </section>
 
-  <section class="details">
-    <p>Prices are in US dollars. Local taxes may be added at checkout depending on your country.</p>
-    <p>Subscriptions renew automatically at the end of each billing period until you cancel. You can cancel at any time; you keep Premium until the end of the period you've paid for. During the free trial you won't be charged if you cancel before it ends.</p>
-    <p>Web purchases are processed by our online reseller Paddle.com, which is the Merchant of Record for those orders. Purchases in the Android app are processed by Google Play.</p>
-    <p>See our <a href="refund.html">Refund Policy</a> for details on refunds. Questions? Email <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a>.</p>
+  <section>
+    <p data-t="d1">Prices are in US dollars. Local taxes may be added at checkout depending on your country.</p>
+    <p data-t="d2">Subscriptions renew automatically at the end of each billing period until you cancel. You can cancel at any time; you keep Premium until the end of the period you've paid for. During the free trial you won't be charged if you cancel before it ends.</p>
+    <p data-t="d3">Web purchases are processed by our online reseller Paddle.com, which is the Merchant of Record for those orders. Purchases in the Android app are processed by Google Play.</p>
+    <p data-t="d4">See our <a href="refund.html">Refund Policy</a> for details on refunds. Questions? Email <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a>.</p>
   </section>
-
+  <p class="tnote" data-t="note"></p>
   <footer>
-    <a href="terms.html">Terms of Service</a>
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="refund.html">Refund Policy</a>
+    <a href="terms.html" data-t="terms">Terms of Service</a>
+    <a href="privacy.html" data-t="privacy">Privacy Policy</a>
+    <a href="refund.html" data-t="refund">Refund Policy</a>
     <p style="margin-top:10px;">© 2026 AI Face Studio</p>
   </footer>
 </main>
+<script>
+(function(){
+  var T = {"en": {"back": "‹ Back to FaceScan", "terms": "Terms of Service", "privacy": "Privacy Policy", "refund": "Refund Policy", "pricing": "Pricing", "note": "", "title": "Pricing", "lead": "Start with a free face scan. Upgrade to Premium for the full side-profile analysis, hairstyle guide and 90-day exercise plan.", "free": "Free", "noAccount": "No account needed", "f1": "Front face shape scan", "f2": "First hairstyle recommendation", "f3": "First 7 days of the exercise plan", "monthly": "Premium monthly", "perMonth": "/ month", "trial7": "7-day free trial", "m1": "Everything in Free", "m2": "Side profile analysis", "m3": "Full hairstyle guide", "m4": "Full 90-day exercise plan", "yearly": "Premium yearly", "perYear": "/ year", "trialSave": "7-day free trial · save 75%", "y1": "Everything in Premium monthly", "y2": "Billed once a year", "d1": "Prices are in US dollars. Local taxes may be added at checkout depending on your country.", "d2": "Subscriptions renew automatically at the end of each billing period until you cancel. You can cancel at any time; you keep Premium until the end of the period you've paid for. During the free trial you won't be charged if you cancel before it ends.", "d3": "Web purchases are processed by our online reseller Paddle.com, which is the Merchant of Record for those orders. Purchases in the Android app are processed by Google Play.", "d4": "See our <a href=\"refund.html\">Refund Policy</a> for details on refunds. Questions? Email <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>."}, "es": {"back": "‹ Volver a FaceScan", "terms": "Términos del servicio", "privacy": "Política de privacidad", "refund": "Política de reembolso", "pricing": "Precios", "note": "Esta página es una traducción por comodidad; en caso de diferencias, prevalece la versión en inglés.", "title": "Precios", "lead": "Empieza con un escaneo facial gratis. Pásate a Premium para el análisis completo del perfil lateral, la guía de peinados y el plan de ejercicios de 90 días.", "free": "Gratis", "noAccount": "Sin necesidad de cuenta", "f1": "Escaneo de la forma del rostro de frente", "f2": "Primera recomendación de peinado", "f3": "Primeros 7 días del plan de ejercicios", "monthly": "Premium mensual", "perMonth": "/ mes", "trial7": "Prueba gratis de 7 días", "m1": "Todo lo del plan gratis", "m2": "Análisis del perfil lateral", "m3": "Guía completa de peinados", "m4": "Plan completo de ejercicios de 90 días", "yearly": "Premium anual", "perYear": "/ año", "trialSave": "Prueba gratis de 7 días · ahorra 75%", "y1": "Todo lo de Premium mensual", "y2": "Se factura una vez al año", "d1": "Los precios están en dólares estadounidenses. Según tu país, pueden añadirse impuestos locales al pagar.", "d2": "Las suscripciones se renuevan automáticamente al final de cada período hasta que las canceles. Puedes cancelar en cualquier momento y conservarás Premium hasta el final del período pagado. Durante la prueba gratuita no se te cobrará si cancelas antes de que termine.", "d3": "Las compras web las procesa nuestro revendedor en línea Paddle.com, que es el Merchant of Record de esos pedidos. Las compras en la app de Android las procesa Google Play.", "d4": "Consulta nuestra <a href=\"refund.html\">Política de reembolso</a> para más detalles sobre reembolsos. ¿Preguntas? Escribe a <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>."}, "pt": {"back": "‹ Voltar ao FaceScan", "terms": "Termos de Serviço", "privacy": "Política de Privacidade", "refund": "Política de Reembolso", "pricing": "Preços", "note": "Esta página é uma tradução para conveniência; em caso de diferença, prevalece a versão em inglês.", "title": "Preços", "lead": "Comece com um escaneamento facial grátis. Assine o Premium para a análise completa do perfil lateral, o guia de penteados e o plano de exercícios de 90 dias.", "free": "Grátis", "noAccount": "Não precisa de conta", "f1": "Escaneamento do formato do rosto de frente", "f2": "Primeira recomendação de penteado", "f3": "Primeiros 7 dias do plano de exercícios", "monthly": "Premium mensal", "perMonth": "/ mês", "trial7": "Teste grátis de 7 dias", "m1": "Tudo do plano grátis", "m2": "Análise do perfil lateral", "m3": "Guia completo de penteados", "m4": "Plano completo de exercícios de 90 dias", "yearly": "Premium anual", "perYear": "/ ano", "trialSave": "Teste grátis de 7 dias · economize 75%", "y1": "Tudo do Premium mensal", "y2": "Cobrado uma vez por ano", "d1": "Os preços estão em dólares americanos. Dependendo do seu país, impostos locais podem ser adicionados no pagamento.", "d2": "As assinaturas são renovadas automaticamente no fim de cada período até que você cancele. Você pode cancelar a qualquer momento e mantém o Premium até o fim do período pago. Durante o teste grátis, você não será cobrado se cancelar antes do fim.", "d3": "As compras pela web são processadas pelo nosso revendedor on-line Paddle.com, que é o Merchant of Record desses pedidos. As compras no app Android são processadas pelo Google Play.", "d4": "Veja nossa <a href=\"refund.html\">Política de Reembolso</a> para detalhes sobre reembolsos. Dúvidas? Escreva para <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>."}, "tr": {"back": "‹ FaceScan'e dön", "terms": "Kullanım Koşulları", "privacy": "Gizlilik Politikası", "refund": "İade Politikası", "pricing": "Fiyatlandırma", "note": "Bu sayfa kolaylık için çevrilmiştir; farklılık olması durumunda İngilizce sürüm geçerlidir.", "title": "Fiyatlandırma", "lead": "Ücretsiz bir yüz taramasıyla başla. Tam yan profil analizi, saç stili rehberi ve 90 günlük egzersiz planı için Premium'a geç.", "free": "Ücretsiz", "noAccount": "Hesap gerekmez", "f1": "Ön yüz şekli taraması", "f2": "İlk saç stili önerisi", "f3": "Egzersiz planının ilk 7 günü", "monthly": "Premium aylık", "perMonth": "/ ay", "trial7": "7 gün ücretsiz deneme", "m1": "Ücretsiz plandaki her şey", "m2": "Yan profil analizi", "m3": "Tam saç stili rehberi", "m4": "Tam 90 günlük egzersiz planı", "yearly": "Premium yıllık", "perYear": "/ yıl", "trialSave": "7 gün ücretsiz deneme · %75 tasarruf", "y1": "Premium aylıktaki her şey", "y2": "Yılda bir kez faturalandırılır", "d1": "Fiyatlar ABD doları cinsindendir. Ülkene göre ödeme sırasında yerel vergiler eklenebilir.", "d2": "Abonelikler sen iptal edene kadar her dönemin sonunda otomatik olarak yenilenir. İstediğin zaman iptal edebilirsin; ödediğin dönemin sonuna kadar Premium'u kullanmaya devam edersin. Ücretsiz deneme bitmeden iptal edersen ücret alınmaz.", "d3": "Web üzerinden yapılan satın almalar, bu siparişlerin Merchant of Record’u (resmi satıcısı) olan online satıcımız Paddle.com tarafından işlenir. Android uygulamasındaki satın almalar Google Play tarafından işlenir.", "d4": "İadelerle ilgili ayrıntılar için <a href=\"refund.html\">İade Politikası</a> sayfamıza bak. Soruların mı var? <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> adresine yaz."}, "az": {"back": "‹ FaceScan-ə qayıt", "terms": "İstifadə Şərtləri", "privacy": "Məxfilik Siyasəti", "refund": "Geri Qaytarma Siyasəti", "pricing": "Qiymətlər", "note": "Bu səhifə rahatlıq üçün tərcümə olunub; fərq olduqda ingilis dilindəki versiya əsas götürülür.", "title": "Qiymətlər", "lead": "Pulsuz üz skanı ilə başla. Tam yan profil analizi, saç düzümü bələdçisi və 90 günlük məşq planı üçün Premium-a keç.", "free": "Pulsuz", "noAccount": "Hesab lazım deyil", "f1": "Önündən üz forması skanı", "f2": "İlk saç düzümü tövsiyəsi", "f3": "Məşq planının ilk 7 günü", "monthly": "Premium aylıq", "perMonth": "/ ay", "trial7": "7 günlük pulsuz sınaq", "m1": "Pulsuz plandakı hər şey", "m2": "Yan profil analizi", "m3": "Tam saç düzümü bələdçisi", "m4": "Tam 90 günlük məşq planı", "yearly": "Premium illik", "perYear": "/ il", "trialSave": "7 günlük pulsuz sınaq · 75% qənaət", "y1": "Premium aylıqdakı hər şey", "y2": "İldə bir dəfə ödənilir", "d1": "Qiymətlər ABŞ dolları ilədir. Ölkəndən asılı olaraq ödəniş zamanı yerli vergilər əlavə oluna bilər.", "d2": "Abunəliklər ləğv edənə qədər hər dövrün sonunda avtomatik yenilənir. İstənilən vaxt ləğv edə bilərsən; ödədiyin dövrün sonuna qədər Premium səndə qalır. Pulsuz sınaq bitməzdən əvvəl ləğv etsən, ödəniş alınmır.", "d3": "Veb üzərindən alışlar bu sifarişlərin Merchant of Record-u (rəsmi satıcısı) olan onlayn satış tərəfdaşımız Paddle.com tərəfindən emal olunur. Android tətbiqindəki alışları Google Play emal edir.", "d4": "Geri qaytarmalar haqqında ətraflı məlumat üçün <a href=\"refund.html\">Geri Qaytarma Siyasəti</a> səhifəmizə bax. Sualın var? <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a> ünvanına yaz."}, "ru": {"back": "‹ Назад в FaceScan", "terms": "Условия использования", "privacy": "Политика конфиденциальности", "refund": "Политика возврата", "pricing": "Цены", "note": "Эта страница переведена для удобства; при расхождениях действует версия на английском языке.", "title": "Цены", "lead": "Начните с бесплатного сканирования лица. Оформите Premium, чтобы получить полный анализ профиля, гид по причёскам и 90-дневный план упражнений.", "free": "Бесплатно", "noAccount": "Аккаунт не нужен", "f1": "Сканирование формы лица анфас", "f2": "Первая рекомендация причёски", "f3": "Первые 7 дней плана упражнений", "monthly": "Premium на месяц", "perMonth": "/ месяц", "trial7": "7 дней бесплатно", "m1": "Всё из бесплатного плана", "m2": "Анализ профиля сбоку", "m3": "Полный гид по причёскам", "m4": "Полный 90-дневный план упражнений", "yearly": "Premium на год", "perYear": "/ год", "trialSave": "7 дней бесплатно · экономия 75%", "y1": "Всё из Premium на месяц", "y2": "Оплата раз в год", "d1": "Цены указаны в долларах США. В зависимости от страны при оплате могут добавляться местные налоги.", "d2": "Подписка автоматически продлевается в конце каждого периода, пока вы её не отмените. Отменить можно в любой момент — Premium сохранится до конца оплаченного периода. Если отменить подписку до окончания бесплатного пробного периода, списания не будет.", "d3": "Покупки на сайте обрабатывает наш онлайн-реселлер Paddle.com, выступающий продавцом (Merchant of Record) по этим заказам. Покупки в Android-приложении обрабатывает Google Play.", "d4": "Подробности о возвратах — в нашей <a href=\"refund.html\">политике возврата</a>. Есть вопросы? Пишите на <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>."}, "de": {"back": "‹ Zurück zu FaceScan", "terms": "Nutzungsbedingungen", "privacy": "Datenschutzerklärung", "refund": "Rückerstattungsrichtlinie", "pricing": "Preise", "note": "Diese Seite ist eine Übersetzung zur Vereinfachung; bei Abweichungen gilt die englische Fassung.", "title": "Preise", "lead": "Starte mit einem kostenlosen Gesichtsscan. Mit Premium bekommst du die vollständige Seitenprofil-Analyse, den Frisurenguide und den 90-Tage-Übungsplan.", "free": "Kostenlos", "noAccount": "Kein Konto nötig", "f1": "Scan der Gesichtsform von vorne", "f2": "Erste Frisurenempfehlung", "f3": "Die ersten 7 Tage des Übungsplans", "monthly": "Premium monatlich", "perMonth": "/ Monat", "trial7": "7 Tage gratis testen", "m1": "Alles aus dem Gratis-Plan", "m2": "Seitenprofil-Analyse", "m3": "Kompletter Frisurenguide", "m4": "Kompletter 90-Tage-Übungsplan", "yearly": "Premium jährlich", "perYear": "/ Jahr", "trialSave": "7 Tage gratis testen · 75 % sparen", "y1": "Alles aus Premium monatlich", "y2": "Einmal pro Jahr abgerechnet", "d1": "Preise in US-Dollar. Je nach Land können beim Bezahlen lokale Steuern hinzukommen.", "d2": "Abos verlängern sich am Ende jedes Zeitraums automatisch, bis du kündigst. Du kannst jederzeit kündigen und behältst Premium bis zum Ende des bezahlten Zeitraums. Kündigst du während der Gratis-Testphase vor deren Ende, wird nichts abgebucht.", "d3": "Käufe im Web werden von unserem Online-Reseller Paddle.com abgewickelt, der für diese Bestellungen der Merchant of Record ist. Käufe in der Android-App wickelt Google Play ab.", "d4": "Details zu Erstattungen findest du in unserer <a href=\"refund.html\">Rückerstattungsrichtlinie</a>. Fragen? Schreib an <a href=\"mailto:sgtim1020@gmail.com\">sgtim1020@gmail.com</a>."}};
+  var LANGS = ["en", "es", "pt", "tr", "az", "ru", "de"];
+  var TITLE_KEY = "title";
+  function pick(){
+    try{
+      var q = new URLSearchParams(location.search).get('lang');
+      if (q && LANGS.indexOf(q) >= 0) return q;
+    }catch(e){}
+    try{
+      var s = localStorage.getItem('faceScanLang');
+      if (s && LANGS.indexOf(s) >= 0) return s;
+    }catch(e){}
+    var n = (navigator.language || 'en').slice(0,2).toLowerCase();
+    return LANGS.indexOf(n) >= 0 ? n : 'en';
+  }
+  function apply(lang){
+    var d = T[lang] || T.en;
+    document.documentElement.lang = lang;
+    var els = document.querySelectorAll('[data-t]');
+    for (var i = 0; i < els.length; i++){
+      var k = els[i].getAttribute('data-t');
+      if (d[k] !== undefined) els[i].innerHTML = d[k];
+    }
+    document.title = d[TITLE_KEY].replace(/<[^>]+>/g,'') + ' — FaceScan: AI Face Analysis';
+    var sel = document.getElementById('langSel');
+    if (sel) sel.value = lang;
+  }
+  var sel = document.getElementById('langSel');
+  if (sel) sel.addEventListener('change', function(){
+    try{ localStorage.setItem('faceScanLang', sel.value); }catch(e){}
+    apply(sel.value);
+  });
+  apply(pick());
+})();
+</script>
 </body>
 </html>
