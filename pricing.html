@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pricing — FaceScan: AI Face Analysis</title>
+<meta name="description" content="FaceScan pricing: free face shape scan, Premium $10/month or $30/year with a 7-day free trial.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#060B12; --panel:#0B131E; --line:rgba(34,211,238,0.16); --signal:#22D3EE; --ink:#EAF2F0; --ink-dim:#7C8B95; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{ background:radial-gradient(ellipse at 50% -10%, rgba(34,211,238,0.08), transparent 50%), var(--bg); color:var(--ink);
+    font-family:'Space Grotesk', system-ui, -apple-system, sans-serif; line-height:1.55; min-height:100vh;
+    padding:env(safe-area-inset-top,0) 20px env(safe-area-inset-bottom,0); }
+  main{ max-width:640px; margin:0 auto; padding:48px 0 40px; }
+  a{ color:var(--signal); }
+  .back{ font-size:14px; text-decoration:none; }
+  h1{ font-size:clamp(30px,7vw,42px); line-height:1.1; margin:24px 0 10px; letter-spacing:-0.02em; }
+  .lead{ color:var(--ink-dim); font-size:16px; max-width:52ch; }
+  .plans{ display:grid; gap:16px; margin:32px 0; }
+  @media (min-width:640px){ .plans{ grid-template-columns:1fr 1fr 1fr; } }
+  .plan{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:22px 20px; }
+  .plan.best{ border-color:var(--signal); }
+  .plan h2{ font-size:17px; font-weight:600; }
+  .price{ font-size:34px; font-weight:700; margin:10px 0 2px; letter-spacing:-0.02em; }
+  .price small{ font-size:15px; font-weight:500; color:var(--ink-dim); }
+  .note{ font-size:13px; color:var(--ink-dim); min-height:20px; }
+  .plan ul{ list-style:none; margin-top:16px; }
+  .plan li{ font-size:14px; padding:6px 0; border-top:1px solid var(--line); }
+  .details{ font-size:14px; color:#CDD8D6; }
+  .details p{ margin-bottom:10px; }
+  footer{ margin-top:40px; font-size:13px; color:var(--ink-dim); }
+  footer a{ color:var(--ink-dim); margin-right:14px; }
+  a:focus-visible{ outline:2px solid var(--signal); outline-offset:3px; border-radius:4px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">‹ Back to FaceScan</a>
+  <h1>Pricing</h1>
+  <p class="lead">Start with a free face scan. Upgrade to Premium for the full side-profile analysis, hairstyle guide and 90-day exercise plan.</p>
+
+  <section class="plans">
+    <div class="plan">
+      <h2>Free</h2>
+      <div class="price">$0</div>
+      <div class="note">No account needed</div>
+      <ul>
+        <li>Front face shape scan</li>
+        <li>First hairstyle recommendation</li>
+        <li>First 7 days of the exercise plan</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <h2>Premium monthly</h2>
+      <div class="price">$10 <small>/ month</small></div>
+      <div class="note">7-day free trial</div>
+      <ul>
+        <li>Everything in Free</li>
+        <li>Side profile analysis</li>
+        <li>Full hairstyle guide</li>
+        <li>Full 90-day exercise plan</li>
+      </ul>
+    </div>
+    <div class="plan best">
+      <h2>Premium yearly</h2>
+      <div class="price">$30 <small>/ year</small></div>
+      <div class="note">7-day free trial · save 75%</div>
+      <ul>
+        <li>Everything in Premium monthly</li>
+        <li>Billed once a year</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="details">
+    <p>Prices are in US dollars. Local taxes may be added at checkout depending on your country.</p>
+    <p>Subscriptions renew automatically at the end of each billing period until you cancel. You can cancel at any time; you keep Premium until the end of the period you've paid for. During the free trial you won't be charged if you cancel before it ends.</p>
+    <p>Web purchases are processed by our online reseller Paddle.com, which is the Merchant of Record for those orders. Purchases in the Android app are processed by Google Play.</p>
+    <p>See our <a href="refund.html">Refund Policy</a> for details on refunds. Questions? Email <a href="mailto:sgtim1020@gmail.com">sgtim1020@gmail.com</a>.</p>
+  </section>
+
+  <footer>
+    <a href="terms.html">Terms of Service</a>
+    <a href="privacy.html">Privacy Policy</a>
+    <a href="refund.html">Refund Policy</a>
+    <p style="margin-top:10px;">© 2026 AI Face Studio</p>
+  </footer>
+</main>
+</body>
+</html>
